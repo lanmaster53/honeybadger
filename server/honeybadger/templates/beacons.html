@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block body %}
+    <br/>
+    <div class="row">
+        <div class="u-full-width center-content beacons">
+        {% if beacons|length > 0 %}
+            <table class="sortable center">
+                <thead>
+                    <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for beacon in beacons %}
+                    <tr>
+                    {% for column in columns %}
+                        <td>{{ beacon[column] }}</td>
+                    {% endfor %}
+                        <td>
+                            <input type="button" onclick="window.location='{{ url_for('beacons_delete', id=beacon.id) }}'" value="delete" />
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h5>No beacons.</h5>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}

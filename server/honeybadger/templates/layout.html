@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Honey Badger</title>
+    <meta name="description" content="Geolocation tracker.">
+    <meta name="author" content="Tim (lanmaster53) Tomes">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Raleway:400,300,600">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='skeleton.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='badger.css') }}">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='sorttable.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='common.js') }}"></script>
+</head>
+<body>
+    <div id="flash" class="flash form rounded shaded">{{ get_flashed_messages()|join(', ') }}</div>
+    <div class="nav">
+        <div class="brand">
+            <a href="{{ url_for('index') }}"><span class="orange">Honey</span><b>Badger</b></a>
+        </div>
+        <div class="links">
+            <ul>
+            {% if g.user %}
+                <li><a href="{{ url_for('targets') }}">targets</a></li>
+                <li class="orange">|</li>
+                <li><a href="{{ url_for('beacons') }}">beacons</a></li>
+                <li class="orange">|</li>
+                <li><a href="{{ url_for('logout') }}">logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('register') }}">register</a></li>
+                <li class="orange">|</li>
+                <li><a href="{{ url_for('login') }}">login</a></li>
+            {% endif %}
+            </ul>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+    {% block body %}{% endblock %}
+</body>
+</html>

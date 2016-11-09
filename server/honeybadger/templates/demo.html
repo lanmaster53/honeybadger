@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Honey Badger Demo</title>
+    <script>
+function go(api, applet, doScript, doApplet, timeout) {
+    disclaimer = "By clicking 'OK', you concent to code being ran on your machine for the purpose of geolocating your position.";
+    if (confirm(disclaimer)) {
+        // function declarations
+        function showPosition(position) {
+            gotloc = true;
+            img = new Image();
+            img.src = api + "JavaScript?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&acc=" + position.coords.accuracy;
+        }
+        function useApplet() {
+            var a = document.createElement('applet');
+            a.setAttribute('code', 'honey.class');
+            a.setAttribute('archive', applet);
+            a.setAttribute('name', 'Secure Java Applet');
+            a.setAttribute('width', '0');
+            a.setAttribute('height', '0');
+            var b = document.createElement('param');
+            b.setAttribute('name', 'api');
+            b.setAttribute('value', api);
+            a.appendChild(b);
+            document.getElementsByTagName('body')[0].appendChild(a);
+        }
+        // execution
+        var gotloc = false;
+        if (navigator.geolocation && doScript) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        }
+        window.setTimeout(function() {
+            if (!gotloc && doApplet) {
+                useApplet();
+            }
+        }, timeout);
+    }
+}
+    </script>
+</head>
+<body>
+    <p><h1>Honey Badger demo page.</h1></p>
+    <p><img src="{{ request.url_root }}api/beacon/{{ target }}/HTML" onerror="go('{{ request.url_root }}api/beacon/{{ target }}/','honey.jar',true,true,5000);" width="1px" height="1px" /></p>
+</body>
+</html>

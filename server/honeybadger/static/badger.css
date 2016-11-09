@@ -1,0 +1,220 @@
+html {
+    height: 100%;
+}
+
+body {
+    font-family: Raleway, Arial, Helvetica, sans-serif;
+    font-size: 1.5rem;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+td input, td select {
+    vertical-align: middle;
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+}
+
+/* overwrite skeleton button style */
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  font-size: 1.25rem;
+  color: white;
+  background-color: #f69741;
+  border-color: #bbb;
+  padding: 0 1rem;
+}
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: white;
+  background-color: #f4821c;
+  border-color: 0;
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+.flash {
+    color: white;
+    position: absolute;
+    z-index: 100;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 2rem;
+    padding: 5px 10px;
+    font-size: 1.5rem;
+    text-align: center;
+    line-height: 2rem;
+    visibility: hidden;
+}
+
+.nav {
+    display: table;
+    /*color: red;*/
+    width: 100%;
+    padding: 0;
+    text-align: right;
+}
+
+.nav div{
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.nav .brand {
+    float: left;
+    font-size: 3rem;
+    margin-left: 1rem
+}
+
+.nav .links {
+    font-weight: bolder;
+    padding-right: 2rem
+}
+
+.nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav li {
+    display: inline;
+}
+
+.nav a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+.login {
+    padding: 50px 20px;
+}
+
+.login img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    height: auto;
+}
+
+.login div {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+}
+
+.login form {
+    margin: 0;
+}
+
+.login label {
+    color: white;
+}
+
+.login a {
+    text-decoration: underline;
+}
+
+.login p {
+    margin-bottom: 1.5rem;
+}
+
+.map {
+    display: block;
+    position: absolute;
+    height: auto;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-top: 5rem;
+    border-top: 2px solid #f69741;
+}
+
+.iw-content {
+    max-width: 300px;
+    margin-bottom: 0;
+}
+
+.iw-content caption {
+    background-color: #f69741;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 400;
+}
+
+.iw-content td {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.beacons th,
+.beacons td,
+.targets th,
+.targets td {
+    text-align: center;
+}
+
+.filter {
+    color: white;
+    position: absolute;
+    top: 6rem;
+    left: 1rem;
+    z-index: 99;
+    padding: 10px;
+}
+
+.filter input {
+    margin: 0;
+}
+
+.form {
+    border: 2px solid #f69741;
+    /* Fallback for web browsers that doesn't support RGBa */
+    background: rgb(0, 0, 0);
+    /* RGBa opacity */
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.rounded {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.shaded {
+    border: 1px solid orange;
+    -webkit-box-shadow: 3px 3px 3px gray;
+    -moz-box-shadow: 3px 3px 3px gray;
+    box-shadow: 3px 3px 3px gray;
+}
+
+.orange {
+    color: #f69741;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.center-content {
+    text-align: center;
+}

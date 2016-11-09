@@ -1,0 +1,5 @@
+*.pyc
+*sublime*
+venv/
+agents/
+server_old/

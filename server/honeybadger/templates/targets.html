@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block body %}
+    <br/>
+    <div class="row">
+        <div class="six columns offset-by-three center-content">
+            <form action="{{ url_for('targets') }}" method="post">
+                <input style="float: right;" type="submit" value="add" onclick="this.form.submit();" />
+                <span style="display: block; overflow: hidden; padding-right: 10px">
+                    <input style="width: 100%;" name="target" type="text" placeholder="target name" />
+                </span>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="u-full-width center-content targets">
+        {% if targets|length > 0 %}
+            <table class="sortable center">
+                <thead>
+                    <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for target in targets %}
+                    <tr>
+                    {% for column in columns %}
+                        <td>{{ target[column] }}</td>
+                    {% endfor %}
+                        <td>
+                            <input type="button" onclick="window.open('{{ url_for('demo', guid=target.guid) }}', '_blank')" value="demo" />
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h5>No targets.</h5>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}

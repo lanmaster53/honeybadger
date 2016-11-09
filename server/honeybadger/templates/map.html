@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div id="filter" class="form filter rounded shaded"></div>
+    <div id="map" class="map">Loading beacons...</div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpvmUe00OZkXRQG_0QY8iA5BubWpr102c"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='badger.js') }}"></script>
+{% endblock %}
