@@ -56,7 +56,7 @@ This method geolocates the target based on the source IP of the request and assi
 Example: (Method: `GET`)
 
 ```
-http://<path_to_honeybadger>/api/beacon/<target>/<agent>
+http://<path:honeybadger>/api/beacon/<guid:target>/<string:agent>
 ```
 
 ### Known Coordinates
@@ -66,7 +66,7 @@ This method accepts previously resolved location data for the given target and a
 Example: (Method: `GET`)
 
 ```
-http://<path_to_honeybadger>/api/beacon/<target>/<agent>?lat=<latitude>&lng=<longitude>&acc=<accuracy>
+http://<path:honeybadger>/api/beacon/<guid:target>/<string:agent>?lat=<float:latitude>&lng=<float:longitude>&acc=<integer:accuracy>
 ```
 
 ### Wireless Survey
@@ -94,13 +94,13 @@ OS X:
 Example: (Method: `POST`)
 
 ```
-http://<path_to_honeybadger>/api/beacon/<target>/<agent>
+http://<path:honeybadger>/api/beacon/<guid:target>/<string:agent>
 ```
 
 POST Payload:
 
 ```
-os=<operating_system>&data=<base64_data>
+os=<string:operating-system>&data=<base64:data>
 ```
 
 The `os` parameter must match one of the following regular expressions:
