@@ -4,10 +4,8 @@
     <div class="row">
         <div class="six columns offset-by-three center-content">
             <form action="{{ url_for('targets') }}" method="post">
-                <input style="float: right;" type="submit" value="add" onclick="this.form.submit();" />
-                <span style="display: block; overflow: hidden; padding-right: 10px">
-                    <input style="width: 100%;" name="target" type="text" placeholder="target name" />
-                </span>
+                <input style="vertical-align: middle" name="target" type="text" placeholder="target name" />
+                <input style="vertical-align: middle" type="submit" value="add" onclick="this.form.submit();" />
             </form>
         </div>
     </div>

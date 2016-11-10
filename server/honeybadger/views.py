@@ -2,9 +2,10 @@ from flask import request, Response, session, g, redirect, url_for, render_templ
 from honeybadger import app, db
 from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist
 from honeybadger.validators import is_valid_email, is_valid_password
-from honeybadger.decorators import login_required
+from honeybadger.decorators import login_required, roles_required
+from honeybadger.constants import ROLES
+from honeybadger.utils import get_token
 from models import User, Target, Beacon
-#from Queue import Queue
 import json
 import re
 import urllib2
@@ -66,39 +67,101 @@ def targets():
     columns = ['id', 'name', 'guid', 'beacon_count']
     return render_template('targets.html', columns=columns, targets=targets)
 
-'''@app.route('/log')
+@app.route('/profile', methods=['GET', 'POST'])
 @login_required
-def log():
-    return render_template('log.html', beacons=[x.serialized for x in g.user.beacons])'''
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+def profile():
     if request.method == 'POST':
-        username = request.form['username']
-        if not User.query.filter_by(username=username).first():
-            password = request.form['password']
-            if password == request.form['confirm_password']:
-                if is_valid_password(password):
-                    email = request.form['email']
-                    if is_valid_email(email):
-                        user = User(
-                            username=username,
-                            password=password,
-                            email=email,
-                        )
-                        db.session.add(user)
-                        db.session.commit()
-                        flash('Account created. Please log in.')
-                        return redirect(url_for('login'))
-                    else:
-                        flash('Invalid email address.')
+        if g.user.check_password(request.form['current_password']):
+            new_password = request.form['new_password']
+            if new_password == request.form['confirm_password']:
+                if is_valid_password(new_password):
+                    g.user.password = new_password
+                    db.session.add(g.user)
+                    db.session.commit()
+                    flash('Profile updated.')
                 else:
                     flash('Password does not meet complexity requirements.')
             else:
                 flash('Passwords do not match.')
         else:
+            flash('Incorrect current password.')
+    return render_template('profile.html', user=g.user)
+
+@app.route('/profile/activate/<string:token>', methods=['GET', 'POST'])
+def profile_activate(token):
+    user = User.query.filter_by(token=token).first()
+    if user and user.status == 0:
+        if request.method == 'POST':
+            new_password = request.form['new_password']
+            if new_password == request.form['confirm_password']:
+                if is_valid_password(new_password):
+                    user.password = new_password
+                    user.status = 1
+                    user.token = None
+                    db.session.add(user)
+                    db.session.commit()
+                    flash('Profile activated.')
+                    return redirect(url_for('login'))
+                else:
+                    flash('Password does not meet complexity requirements.')
+            else:
+                flash('Passwords do not match.')
+        return render_template('profile_activate.html', user=user)
+    abort(404)
+
+@app.route('/admin')
+@login_required
+@roles_required('admin')
+def admin():
+    users = User.query.filter(User.id != g.user.id).all()
+    columns = ['email', 'role_as_string', 'status_as_string']
+    return render_template('admin.html', columns=columns, users=users, roles=ROLES)
+
+@app.route('/admin/users/invite', methods=['POST'])
+@login_required
+@roles_required('admin')
+def admin_users_invite():
+    email = request.form['email']
+    if is_valid_email(email):
+        if not User.query.filter_by(email=email).first():
+                user = User(
+                    email=email,
+                    token=get_token(),
+                )
+                db.session.add(user)
+                db.session.commit()
+                flash('User invited.')
+        else:
             flash('Username already exists.')
-    return render_template('register.html')
+    else:
+        flash('Invalid email address.')
+    # send notification to user
+    return redirect(url_for('admin'))
+
+@app.route('/admin/users/<string:action>/<int:id>')
+@login_required
+@roles_required('admin')
+def admin_users(action, id):
+    user = User.query.get(id)
+    if user:
+        if user != g.user:
+            if action == 'activate' and user.status == 2:
+                user.status = 1
+                db.session.add(user)
+                db.session.commit()
+                flash('User activated.')
+            elif action == 'deactivate' and user.status == 1:
+                user.status = 2
+                db.session.add(user)
+                db.session.commit()
+                flash('User deactivated.')
+            else:
+                flash('Invalid user action.')
+        else:
+            flash('Self-modification denied.')
+    else:
+        flash('Invalid user ID.')
+    return redirect(url_for('admin'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -106,8 +169,8 @@ def login():
     if session.get('user_id'):
         return redirect(url_for('index'))
     if request.method == 'POST':
-        user = User.get_by_username(request.form['username'])
-        if user is not None and user.check_password(request.form['password']):
+        user = User.get_by_email(request.form['email'])
+        if user and user.status == 1 and user.check_password(request.form['password']):
             session['user_id'] = user.id
             flash('You have successfully logged in.')
             return redirect(url_for('index'))
@@ -209,22 +272,6 @@ def api_beacon(target, agent):
     else:
         abort(400)
 
-'''subscriptions = {}
-@app.route("/subscribe")
-@login_required
-def subscribe():
-    def gen(guid):
-        q = Queue()
-        subscriptions[guid] = q
-        print('[*] Subscription added: {}'.format(guid))
-        try:
-            while True:
-                yield 'data: ' + json.dumps(q.get()) + '\n\n'
-        except GeneratorExit:
-            del subscriptions[user.guid]
-            print('[*] Subscription removed: {}'.format(guid))
-    return Response(gen(g.user.guid), mimetype="text/event-stream")'''
-
 # support functions
 
 def log(s):
@@ -261,3 +308,8 @@ def get_coords_by_ip(ip):
         # handle invalud json object
         log('[!] Invalid JSON object. Giving up on host.')
         return None
+
+'''@app.route('/log')
+@login_required
+def log():
+    return render_template('log.html', beacons=[x.serialized for x in g.user.beacons])'''

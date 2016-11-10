@@ -1,13 +1,3 @@
-bcrypt
-cffi
-click
 Flask
 Flask-Bcrypt
 Flask-SQLAlchemy
-itsdangerous
-Jinja2
-MarkupSafe
-pycparser
-six
-SQLAlchemy
-Werkzeug

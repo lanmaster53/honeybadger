@@ -1,33 +1,14 @@
 from honeybadger import db, bcrypt
+from honeybadger.constants import ROLES, STATUSES
+from honeybadger.utils import get_guid
 import binascii
 import datetime
-import uuid
 
 def stringify_datetime(value):
     """Deserialize datetime object into string form for JSON processing."""
     if value is None:
         return None
     return value.strftime("%Y-%m-%d %H:%M:%S")
-
-'''
-import honeybadger
-honeybadger.dropdb()
-honeybadger.initdb()
-#from honeybadger import bcrypt
-#import binascii
-#u = honeybadger.models.User(username='user', password_hash=bcrypt.generate_password_hash(binascii.hexlify('password')), email='tjt1980@gmail.com')
-#honeybadger.db.session.add(u)
-#honeybadger.db.session.commit()
-t = honeybadger.models.Target(name='target1', guid='aedc4c63-8d13-4a22-81c5-d52d32293867', owner=1)
-honeybadger.db.session.add(t)
-honeybadger.db.session.commit()
-b = honeybadger.models.Beacon(target_guid='aedc4c63-8d13-4a22-81c5-d52d32293867', agent='agent1', ip='1.2.3.4', port='80', useragent='Mac OS X', comment='this is a comment.', lat='38.2531419', lng='-85.7564855', acc='5')
-honeybadger.db.session.add(b)
-honeybadger.db.session.commit()
-b = honeybadger.models.Beacon(target_guid='aedc4c63-8d13-4a22-81c5-d52d32293867', agent='agent1', ip='5.6.7.8', port='80', useragent='Mac OS X', comment='this is a comment.', lat='34.855117', lng='-82.114192', acc='1')
-honeybadger.db.session.add(b)
-honeybadger.db.session.commit()
-'''
 
 class Beacon(db.Model):
     __tablename__ = 'beacons'
@@ -67,7 +48,7 @@ class Target(db.Model):
     __tablename__ = 'targets'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    guid = db.Column(db.String, default=lambda: str(uuid.uuid4()))
+    guid = db.Column(db.String, default=get_guid())
     owner = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     beacons = db.relationship('Beacon', backref='target', lazy='dynamic')
 
@@ -81,10 +62,20 @@ class Target(db.Model):
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String)
-    email = db.Column(db.String)
+    role = db.Column(db.Integer, nullable=False, default=1)
+    status = db.Column(db.Integer, nullable=False, default=0)
+    token = db.Column(db.String)
     targets = db.relationship('Target', backref='user', lazy='dynamic')
+
+    @property
+    def role_as_string(self):
+        return ROLES[self.role]
+
+    @property
+    def status_as_string(self):
+        return STATUSES[self.status]
 
     @property
     def password(self):
@@ -97,9 +88,15 @@ class User(db.Model):
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, binascii.hexlify(password))
 
+    @property
+    def is_admin(self):
+        if self.role == 0:
+            return True
+        return False
+
     @staticmethod
-    def get_by_username(username):
-        return User.query.filter_by(username=username).first()
+    def get_by_email(email):
+        return User.query.filter_by(email=email).first()
 
     def __repr__(self):
-        return "<User '{}'>".format(self.username)
+        return "<User '{}'>".format(self.email)

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="row">
+        <div class="four columns offset-by-four login">
+            <div class="form rounded shaded">
+                <form action="{{ url_for('profile') }}" method="post">
+                    <input class="u-full-width" name="email" type="text" value="{{ user.email }}" disabled/>
+                    <input class="u-full-width" name="new_password" type="password" placeholder="new password" />
+                    <input class="u-full-width" name="confirm_password" type="password" placeholder="confirm password" />
+                    <input class="u-full-width" name="current_password" type="password" placeholder="current password" />
+                    <input type="submit" value="submit" onclick="this.form.submit();" />
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

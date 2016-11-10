@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block body %}
+    <br/>
+    <div class="row">
+        <div class="six columns offset-by-three center-content">
+            <form action="{{ url_for('admin_users_invite') }}" method="post">
+                <input style="vertical-align: middle" name="email" type="text" placeholder="email address" />
+                <input style="vertical-align: middle" type="submit" value="invite" onclick="this.form.submit();" />
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="u-full-width center-content users">
+        {% if users|length > 0 %}
+            <table class="sortable center">
+                <thead>
+                    <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                    {% for column in columns %}
+                        <td>{{ user[column] }}</td>
+                    {% endfor %}
+                        <td>
+                        {% if user.status == 0 %}
+                            <input type="button" onclick="copy2clip('{{ url_for('profile_activate', _external=True, token=user.token) }}')" value="get link" />
+                        {% elif user.status == 1 %}
+                            <input type="button" onclick="window.location='{{ url_for('admin_users', action='deactivate', id=user.id) }}'" value="deactivate" />
+                        {% elif user.status == 2 %}
+                            <input type="button" onclick="window.location='{{ url_for('admin_users', action='activate', id=user.id) }}'" value="activate" />
+                        {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <h5>No users.</h5>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}

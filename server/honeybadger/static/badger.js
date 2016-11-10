@@ -83,9 +83,11 @@ function load_markers(json) {
             checkbox.addEventListener('change', function(e) {
                 toggle_marker(e.target);
             });
-            document.getElementById('filter').appendChild(checkbox);
-            document.getElementById('filter').appendChild(document.createTextNode(' '+marker.target));
-            document.getElementById('filter').appendChild(document.createElement('br'));
+            var filter = document.getElementById('filter');
+            filter.style.visibility = "visible";
+            filter.appendChild(checkbox);
+            filter.appendChild(document.createTextNode(' '+marker.target));
+            filter.appendChild(document.createElement('br'));
             targets.push(marker.target);
         }
     }

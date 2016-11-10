@@ -5,14 +5,13 @@
             <img src="{{ url_for('static', filename='honeybadger.png') }}" />
             <div class="form rounded shaded">
                 <form action="{{ url_for('register') }}" method="post">
-                    <label for="username">username</label>
-                    <input class="u-full-width" name="username" type="text" />
-                    <label for="name">email</label>
+                    <label for="email">email</label>
                     <input class="u-full-width" name="email" type="text" />
                     <label for="password">password</label>
                     <input class="u-full-width" name="password" type="password" />
                     <label for="confirm_password">confirm password</label>
-                    <input class="u-full-width" name="confirm_password" type="password" />                    <input class="u-full-width" type="submit" value="register" onclick="this.form.submit();" />
+                    <input class="u-full-width" name="confirm_password" type="password" />
+                    <input class="u-full-width" type="submit" value="register" onclick="this.form.submit();" />
                 </form>
             </div>
         </div>

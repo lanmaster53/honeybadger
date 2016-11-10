@@ -168,7 +168,9 @@ a {
 .beacons th,
 .beacons td,
 .targets th,
-.targets td {
+.targets td,
+.users th,
+.users td {
     text-align: center;
 }
 
@@ -179,6 +181,7 @@ a {
     left: 1rem;
     z-index: 99;
     padding: 10px;
+    visibility: hidden;
 }
 
 .filter input {
