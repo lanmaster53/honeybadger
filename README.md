@@ -1,6 +1,6 @@
 # HoneyBadger v2
 
-HoneyBadger is a framework for targeted geolocation. While honeypots are traditionally used to passively detect malicious actors, HoneyBadger is an Active Defense tool to determine who the malicious actor is and where they are located. HoneyBadger leverages "agents" built in various technologies that harvest the requisite information from the target host in order to geolocate them. These agents report back to the HoneyBadger API, which presents the data in an user interface.
+HoneyBadger is a framework for targeted geolocation. While honeypots are traditionally used to passively detect malicious actors, HoneyBadger is an Active Defense tool to determine who the malicious actor is and where they are located. HoneyBadger leverages "agents" built in various technologies that harvest the requisite information from the target host in order to geolocate them. These agents report back to the HoneyBadger API, where the data is stored and made available in the HoneyBadger user interface.
 
 An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide and Seek: Post-Exploitation Style](http://youtu.be/VJTrRMqHU5U)" from ShmooCon 2013. The associated Metasploit Framework modules mentioned in the above presentation can be found [here](https://github.com/v10l3nt/metasploit-framework/tree/master/modules/auxiliary/badger). Note: These modules have not been updated to work with v2 of the API.
 
@@ -26,13 +26,12 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
     $ pip install -r requirements.txt
     ```
 
-4. Initialize the database in a Python interpreter.
+4. Initialize the database. The provided username and password will become the administrator account.
 
     ```
     $ python
     >>> import honeybadger
-    >>> honeybadger.initdb()
-    ^D
+    >>> honeybadger.initdb(<username>, <password>)
     ```
 
 5. Start the HoneyBadger server.
@@ -41,11 +40,22 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
     $ python ./honeybadger.py
     ```
 
-6. Visit the application and register a user.
-7. Add targets using the "targets" page.
+6. Visit the application and authenticate.
+7. Add users and targets as needed using their respective pages.
 8. Deploy agents for the desired target.
 
 Clicking the "demo" button next to any of the targets will launch a demo web page containing an `HTML`, `JavaScript`, and `Applet` agent for that target.
+
+### Fresh Start
+
+Make a mess and want to start over fresh? Do this.
+
+```
+$ python
+>>> import honeybadger
+>>> honeybadger.dropdb()
+>>> honeybadger.initdb(<username>, <password>)
+```
 
 ## API Usage
 

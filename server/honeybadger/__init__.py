@@ -19,12 +19,14 @@ db = SQLAlchemy(app)
 import models
 import views
 
-def initdb():
+def initdb(username, password):
     db.create_all()
     import binascii
-    u = models.User(email='hb', password_hash=bcrypt.generate_password_hash(binascii.hexlify('hb')), role=0, status=1)
+    u = models.User(email=username, password_hash=bcrypt.generate_password_hash(binascii.hexlify(password)), role=0, status=1)
     db.session.add(u)
     db.session.commit()
+    print 'Database initialized.'
+    # remove below for production
     t = models.Target(name='target1', guid='aedc4c63-8d13-4a22-81c5-d52d32293867', owner=1)
     db.session.add(t)
     db.session.commit()
@@ -34,7 +36,6 @@ def initdb():
     b = models.Beacon(target_guid='aedc4c63-8d13-4a22-81c5-d52d32293867', agent='agent1', ip='5.6.7.8', port='80', useragent='Mac OS X', comment='this is a comment.', lat='34.855117', lng='-82.114192', acc='1')
     db.session.add(b)
     db.session.commit()
-    print 'Database initialized.'
 
 def dropdb():
     db.drop_all()
