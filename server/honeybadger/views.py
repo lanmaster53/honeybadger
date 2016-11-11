@@ -267,12 +267,13 @@ def api_beacon(target, agent):
             # handle blank data
             log.message('No data received from the agent.')
     # fall back
-    if get_coords_by_ip(ip):
+    lat, lng = get_coords_by_ip(ip)
+    if all((lat, lng)):
         add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc='Unknown')
         return 'ok'
     else:
         # abort to 404 for obscurity
-        abort(404)
+        abort(400)
 
 # support functions
 
@@ -296,17 +297,17 @@ def get_json(url):
     return jsondata
 
 def get_coords_by_ip(ip):
-    log.message('Attempting to geolocate by IP.');
+    log.message('Attempting to geolocate by IP.')
     url = 'http://uniapple.net/geoip/?ip={}'.format(ip)
     jsondata = get_json(url)
     if jsondata:
         lat = jsondata['latitude']
         lng = jsondata['longitude']
-        return (lat, lng)
+        return lat, lng
     else:
-        # handle invalud json object
+        # handle invalid json object
         log.error('Invalid JSON object. Giving up on host.')
-        return None
+        return None, None
 
 '''@app.route('/log')
 @login_required
