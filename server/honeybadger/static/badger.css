@@ -43,11 +43,6 @@ input[type="button"]:focus {
   border-color: 0;
 }
 
-a {
-    color: white;
-    text-decoration: none;
-}
-
 .flash {
     color: white;
     position: absolute;
@@ -99,7 +94,7 @@ a {
 
 .nav a {
     color: inherit;
-    text-decoration: inherit;
+    text-decoration: none;
 }
 
 .login {

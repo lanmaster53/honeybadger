@@ -53,6 +53,7 @@ function load_markers(json) {
     for (var i = 0; i < json['beacons'].length; i++) {
         marker = json['beacons'][i];
         // add the marker to the map
+        var coords = marker.lat+','+marker.lng
         var comment = marker.comment || '';
         var currMarker = add_marker({
             position: new google.maps.LatLng(marker.lat,marker.lng),
@@ -64,8 +65,7 @@ function load_markers(json) {
                 + '<tr><td>Agent:</td><td>'+marker.agent+' @ '+marker.ip+':'+marker.port+'</td></tr>'
                 + '<tr><td>Time:</td><td>'+marker.time+'</td></tr>'
                 + '<tr><td>User-Agent:</td><td>'+marker.useragent+'</td></tr>'
-                + '<tr><td>Latitude:</td><td>'+marker.lat+'</td></tr>'
-                + '<tr><td>Longitude:</td><td>'+marker.lng+'</td></tr>'
+                + '<tr><td>Coordinates:</td><td><a href="https://www.google.com/maps/place/'+coords+'" target="_blank">'+coords+'</a></td></tr>'
                 + '<tr><td>Accuracy:</td><td>'+marker.acc+'</td></tr>'
                 + '<tr><td>Comment:</td><td>'+comment+'</td></tr>'
                 + '</table>'
