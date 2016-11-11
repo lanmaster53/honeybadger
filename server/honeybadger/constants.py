@@ -4,7 +4,7 @@ ROLES = {
 }
 
 STATUSES = {
-    0: 'invited',
+    0: 'initialized',
     1: 'active',
     2: 'inactive',
     3: 'reset',

@@ -118,10 +118,10 @@ def admin():
     columns = ['email', 'role_as_string', 'status_as_string']
     return render_template('admin.html', columns=columns, users=users, roles=ROLES)
 
-@app.route('/admin/users/invite', methods=['POST'])
+@app.route('/admin/users/init', methods=['POST'])
 @login_required
 @roles_required('admin')
-def admin_users_invite():
+def admin_users_init():
     email = request.form['email']
     if is_valid_email(email):
         if not User.query.filter_by(email=email).first():
@@ -131,7 +131,7 @@ def admin_users_invite():
                 )
                 db.session.add(user)
                 db.session.commit()
-                flash('User invited.')
+                flash('User initialized.')
         else:
             flash('Username already exists.')
     else:
