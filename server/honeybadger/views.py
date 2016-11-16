@@ -36,7 +36,7 @@ def map():
 def beacons():
     beacons = [b.serialized for t in g.user.targets for b in t.beacons.all()]
     #columns = beacons[0].keys()
-    columns = ['id', 'target', 'agent', 'time']
+    columns = ['id', 'target', 'agent', 'lat', 'lng', 'acc', 'ip', 'time']
     return render_template('beacons.html', columns=columns, beacons=beacons)
 
 @app.route('/beacons/delete/<int:id>')
