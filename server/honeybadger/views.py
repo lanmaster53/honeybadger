@@ -205,7 +205,7 @@ def api_beacon(target, agent):
     log.message('Target: {}'.format(target))
     log.message('Agent: {}'.format(agent))
     # check if target is valid
-    if target not in [x.guid for x in g.user.targets]:
+    if target not in [x.guid for x in Target.query.all()]:
         log.error('Invalid target GUID.')
         return 'ok'
     # extract universal variables
@@ -273,7 +273,7 @@ def api_beacon(target, agent):
         return 'ok'
     else:
         # abort to 404 for obscurity
-        abort(400)
+        abort(404)
 
 # support functions
 
