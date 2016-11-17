@@ -72,6 +72,19 @@ def target_add():
         flash('Target added.')
     return redirect(url_for('targets'))
 
+@app.route('/target/delete/<string:guid>')
+@login_required
+@roles_required('admin')
+def target_delete(guid):
+    target = Target.query.filter_by(guid=guid).first()
+    if target:
+        db.session.delete(target)
+        db.session.commit()
+        flash('Target deleted.')
+    else:
+        flash('Invalid target GUID.')
+    return redirect(url_for('targets'))
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():

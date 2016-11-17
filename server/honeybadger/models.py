@@ -49,7 +49,7 @@ class Target(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     guid = db.Column(db.String, default=get_guid())
-    beacons = db.relationship('Beacon', backref='target', lazy='dynamic')
+    beacons = db.relationship('Beacon', cascade="all,delete", backref='target', lazy='dynamic')
 
     @property
     def beacon_count(self):

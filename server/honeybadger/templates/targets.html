@@ -31,6 +31,9 @@
                     {% endfor %}
                         <td>
                             <input type="button" onclick="window.open('{{ url_for('demo', guid=target.guid) }}', '_blank')" value="demo" />
+                        {% if g.user.is_admin %}
+                            <input type="button" onclick="window.location='{{ url_for('target_delete', guid=target.guid) }}'" value="delete" />
+                        {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
