@@ -1,6 +1,6 @@
 ROLES = {
     0: 'admin',
-    1: 'user',
+    1: 'analyst',
 }
 
 STATUSES = {

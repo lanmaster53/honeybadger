@@ -20,7 +20,9 @@
                         <td>{{ beacon[column] }}</td>
                     {% endfor %}
                         <td>
-                            <input type="button" onclick="window.location='{{ url_for('beacons_delete', id=beacon.id) }}'" value="delete" />
+                        {% if g.user.is_admin %}
+                            <input type="button" onclick="window.location='{{ url_for('beacon_delete', id=beacon.id) }}'" value="delete" />
+                        {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

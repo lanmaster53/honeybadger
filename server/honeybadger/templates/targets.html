@@ -1,14 +1,16 @@
 {% extends "layout.html" %}
 {% block body %}
     <br/>
+    {% if g.user.is_admin %}
     <div class="row">
         <div class="six columns offset-by-three center-content">
-            <form action="{{ url_for('targets') }}" method="post">
+            <form action="{{ url_for('target_add') }}" method="post">
                 <input style="vertical-align: middle" name="target" type="text" placeholder="target name" />
                 <input style="vertical-align: middle" type="submit" value="add" onclick="this.form.submit();" />
             </form>
         </div>
     </div>
+    {% endif %}
     <div class="row">
         <div class="u-full-width center-content targets">
         {% if targets|length > 0 %}

@@ -34,14 +34,14 @@ def map():
 @app.route('/beacons')
 @login_required
 def beacons():
-    beacons = [b.serialized for t in g.user.targets for b in t.beacons.all()]
-    #columns = beacons[0].keys()
+    beacons = [b.serialized for t in Target.query.all() for b in t.beacons.all()]
     columns = ['id', 'target', 'agent', 'lat', 'lng', 'acc', 'ip', 'time']
     return render_template('beacons.html', columns=columns, beacons=beacons)
 
-@app.route('/beacons/delete/<int:id>')
+@app.route('/beacon/delete/<int:id>')
 @login_required
-def beacons_delete(id):
+@roles_required('admin')
+def beacon_delete(id):
     beacon = Beacon.query.get(id)
     if beacon:
         db.session.delete(beacon)
@@ -51,21 +51,26 @@ def beacons_delete(id):
         flash('Invalid beacon ID.')
     return redirect(url_for('beacons'))
 
-@app.route('/targets', methods=['GET', 'POST'])
+@app.route('/targets')
 @login_required
 def targets():
-    if request.method == 'POST':
-        target = request.form['target']
-        if target:
-            t = Target(
-                name=target,
-                user=g.user,
-            )
-            db.session.add(t)
-            db.session.commit()
-    targets = g.user.targets.all()
+    targets = Target.query.all()
     columns = ['id', 'name', 'guid', 'beacon_count']
     return render_template('targets.html', columns=columns, targets=targets)
+
+@app.route('/target/add', methods=['POST'])
+@login_required
+@roles_required('admin')
+def target_add():
+    name = request.form['target']
+    if name:
+        target = Target(
+            name=name,
+        )
+        db.session.add(target)
+        db.session.commit()
+        flash('Target added.')
+    return redirect(url_for('targets'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -114,24 +119,24 @@ def profile_activate(token):
 @login_required
 @roles_required('admin')
 def admin():
-    users = User.query.filter(User.id != g.user.id).all()
+    users = User.query.all()
     columns = ['email', 'role_as_string', 'status_as_string']
     return render_template('admin.html', columns=columns, users=users, roles=ROLES)
 
-@app.route('/admin/users/init', methods=['POST'])
+@app.route('/admin/user/init', methods=['POST'])
 @login_required
 @roles_required('admin')
-def admin_users_init():
+def admin_user_init():
     email = request.form['email']
     if is_valid_email(email):
         if not User.query.filter_by(email=email).first():
-                user = User(
-                    email=email,
-                    token=get_token(),
-                )
-                db.session.add(user)
-                db.session.commit()
-                flash('User initialized.')
+            user = User(
+                email=email,
+                token=get_token(),
+            )
+            db.session.add(user)
+            db.session.commit()
+            flash('User initialized.')
         else:
             flash('Username already exists.')
     else:
@@ -139,10 +144,10 @@ def admin_users_init():
     # send notification to user
     return redirect(url_for('admin'))
 
-@app.route('/admin/users/<string:action>/<int:id>')
+@app.route('/admin/user/<string:action>/<int:id>')
 @login_required
 @roles_required('admin')
-def admin_users(action, id):
+def admin_user(action, id):
     user = User.query.get(id)
     if user:
         if user != g.user:
@@ -194,7 +199,7 @@ def demo(guid):
 @app.route('/api/beacons')
 @login_required
 def api_beacons():
-    beacons = [b.serialized for t in g.user.targets for b in t.beacons.all()]
+    beacons = [b.serialized for t in Target.query.all() for b in t.beacons.all()]
     return jsonify(beacons=beacons)
 
 # agent api views

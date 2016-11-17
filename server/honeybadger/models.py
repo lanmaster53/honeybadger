@@ -49,7 +49,6 @@ class Target(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     guid = db.Column(db.String, default=get_guid())
-    owner = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     beacons = db.relationship('Beacon', backref='target', lazy='dynamic')
 
     @property
@@ -67,7 +66,6 @@ class User(db.Model):
     role = db.Column(db.Integer, nullable=False, default=1)
     status = db.Column(db.Integer, nullable=False, default=0)
     token = db.Column(db.String)
-    targets = db.relationship('Target', backref='user', lazy='dynamic')
 
     @property
     def role_as_string(self):
