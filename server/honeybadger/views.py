@@ -207,8 +207,8 @@ def api_beacon(target, agent):
     # check if target is valid
     if target not in [x.guid for x in Target.query.all()]:
         log.error('Invalid target GUID.')
-        return 'ok'
-    # extract universal variables
+        abort(404)
+    # extract universal parameters
     comment = None
     if 'comment' in request.values:
         comment = request.values['comment'].decode('base64')
@@ -219,14 +219,15 @@ def api_beacon(target, agent):
     log.message('Parameters: {}'.format(request.values.to_dict()))
     log.message('User-Agent: {}'.format(useragent))
     log.message('Comment: {}'.format(comment))
-    # handle tracking data
-    if all (k in request.values for k in ('lat', 'lng', 'acc')):
+    # process known coordinates
+    if all(k in request.values for k in ('lat', 'lng', 'acc')):
         lat = request.values['lat']
         lng = request.values['lng']
         acc = request.values['acc']
         add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc=acc)
-        return 'ok'
-    elif all (k in request.values for k in ('os', 'data')):
+        abort(404)
+    # process wireless survey
+    elif all(k in request.values for k in ('os', 'data')):
         os = request.values['os']
         data = request.values['data']
         content = data.decode('base64')
@@ -253,7 +254,7 @@ def api_beacon(target, agent):
                         lat = jsondata['location']['lat']
                         lng = jsondata['location']['lng']
                         add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc=acc)
-                        return 'ok'
+                        abort(404)
                     else:
                         # handle zero results returned from the api
                         log.message('No results.')
@@ -266,14 +267,13 @@ def api_beacon(target, agent):
         else:
             # handle blank data
             log.message('No data received from the agent.')
-    # fall back
+    # process ip geolocation (fallback)
     lat, lng = get_coords_by_ip(ip)
     if all((lat, lng)):
         add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc='Unknown')
-        return 'ok'
-    else:
-        # abort to 404 for obscurity
         abort(404)
+    # default abort to 404 for obscurity
+    abort(404)
 
 # support functions
 
