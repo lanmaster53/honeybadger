@@ -30,7 +30,7 @@ function load_map() {
     bounds = new google.maps.LatLngBounds();
 }
 
-function add_marker(opts, place, target) {
+function add_marker(opts, place, beacon) {
     var marker = new google.maps.Marker(opts);
     var infowindow = new google.maps.InfoWindow({
         autoScroll: false,
@@ -39,56 +39,71 @@ function add_marker(opts, place, target) {
     google.maps.event.addListener(marker, 'click', function() {
         infowindow.open(map,marker);
     });
-    // add the marker to its target storage array
-    if (!window['markers'].hasOwnProperty(target)) {
-        window['markers'][target] = [];
-    }
-    window['markers'][target].push(marker);
+    // add the beacon data to its marker object
+    marker.beacon = beacon;
+    window['markers'].push(marker);
     bounds.extend(opts.position);
     return marker;
 }
 
 function load_markers(json) {
     var targets = [];
+    var agents = [];
     for (var i = 0; i < json['beacons'].length; i++) {
-        marker = json['beacons'][i];
+        beacon = json['beacons'][i];
         // add the marker to the map
-        var coords = marker.lat+','+marker.lng
-        var comment = marker.comment || '';
-        var currMarker = add_marker({
-            position: new google.maps.LatLng(marker.lat,marker.lng),
-                title:marker.ip+":"+marker.port,
+        var coords = beacon.lat+','+beacon.lng
+        var comment = beacon.comment || '';
+        var marker = add_marker({
+            position: new google.maps.LatLng(beacon.lat,beacon.lng),
+                title:beacon.ip+":"+beacon.port,
                 map:map
             },{
             details:'<table class="iw-content">'
-                + '<caption>'+marker.target+'</caption>'
-                + '<tr><td>Agent:</td><td>'+marker.agent+' @ '+marker.ip+':'+marker.port+'</td></tr>'
-                + '<tr><td>Time:</td><td>'+marker.time+'</td></tr>'
-                + '<tr><td>User-Agent:</td><td>'+marker.useragent+'</td></tr>'
+                + '<caption>'+beacon.target+'</caption>'
+                + '<tr><td>Agent:</td><td>'+beacon.agent+' @ '+beacon.ip+':'+beacon.port+'</td></tr>'
+                + '<tr><td>Time:</td><td>'+beacon.time+'</td></tr>'
+                + '<tr><td>User-Agent:</td><td>'+beacon.useragent+'</td></tr>'
                 + '<tr><td>Coordinates:</td><td><a href="https://www.google.com/maps/place/'+coords+'" target="_blank">'+coords+'</a></td></tr>'
-                + '<tr><td>Accuracy:</td><td>'+marker.acc+'</td></tr>'
+                + '<tr><td>Accuracy:</td><td>'+beacon.acc+'</td></tr>'
                 + '<tr><td>Comment:</td><td>'+comment+'</td></tr>'
                 + '</table>'
             },
-            marker.target
+            beacon
         );
-        // add filter checkboxes for each target
-        if (targets.indexOf(marker.target) === -1) {
+        // add filter checkboxes for each unique target
+        if (targets.indexOf(beacon.target) === -1) {
             var checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.name = 'targets';
-            checkbox.value = marker.target;
+            checkbox.name = 'target';
+            checkbox.value = beacon.target;
             checkbox.setAttribute('checked', 'checked');
             checkbox.checked = true;
             checkbox.addEventListener('change', function(e) {
                 toggle_marker(e.target);
             });
-            var filter = document.getElementById('filter');
-            filter.style.visibility = "visible";
+            var filter = document.getElementById('filter-target');
             filter.appendChild(checkbox);
-            filter.appendChild(document.createTextNode(' '+marker.target));
+            filter.appendChild(document.createTextNode(' '+beacon.target));
             filter.appendChild(document.createElement('br'));
-            targets.push(marker.target);
+            targets.push(beacon.target);
+        }
+        // add filter checkboxes for each unique agent
+        if (agents.indexOf(beacon.agent) === -1) {
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'agent';
+            checkbox.value = beacon.agent;
+            checkbox.setAttribute('checked', 'checked');
+            checkbox.checked = true;
+            checkbox.addEventListener('change', function(e) {
+                toggle_marker(e.target);
+            });
+            var filter = document.getElementById('filter-agent');
+            filter.appendChild(checkbox);
+            filter.appendChild(document.createTextNode(' '+beacon.agent));
+            filter.appendChild(document.createElement('br'));
+            agents.push(beacon.agent);
         }
     }
     map.fitBounds(bounds);
@@ -100,14 +115,12 @@ function toggle_marker(element) {
     if(element.checked) {
         _map = map;
     }
-    for (var i = 0; i < window['markers'][element.value].length; i++) {
-        window['markers'][element.value][i].setMap(_map);
+    for (var i = 0; i < window['markers'].length; i++) {
+        if (window['markers'][i].beacon[element.name] === element.value) {
+            window['markers'][i].setMap(_map);
+        }
     }
 }
-
-/*function open_marker(marker) {
-    google.maps.event.trigger(marker, "click");
-}*/
 
 $(document).ready(function() {
 
@@ -120,10 +133,7 @@ $(document).ready(function() {
         url: "/api/beacons",
         success: function(data) {
             // declare a storage array for markers
-            window['markers'] = {};
-            // store the raw beacons for later use
-            //window['beacons'] = data['beacons'];
-            //console.log(data);
+            window['markers'] = [];
             load_markers(data);
             flash("Markers loaded successfully.");
         },
@@ -132,17 +142,6 @@ $(document).ready(function() {
             flash(error.message);
         }
     });
-
-    // register a target filter event handler
-    /*$("input[name='targets']").on('change', function() {
-        $.each($("input[name='targets']"), function() {
-            if(this.checked) {
-                toggle_markers(map, this.value);
-            } else {
-                toggle_markers(null, this.value);
-            }
-        });
-    });*/
 
     /*var sse = new EventSource("/subscribe");
     sse.onmessage = function(e) {

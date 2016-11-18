@@ -176,7 +176,11 @@ input[type="button"]:focus {
     left: 1rem;
     z-index: 99;
     padding: 10px;
-    visibility: hidden;
+}
+
+.filter hr {
+    border-color: #f69741;
+    margin: 0;
 }
 
 .filter input {
