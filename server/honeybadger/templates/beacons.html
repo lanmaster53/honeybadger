@@ -21,7 +21,7 @@
                     {% endfor %}
                         <td>
                         {% if g.user.is_admin %}
-                            <input type="button" onclick="window.location='{{ url_for('beacon_delete', id=beacon.id) }}'" value="delete" />
+                            <input type="button" onclick="if (confirm('Are you sure you want to delete this beacon?')) { window.location='{{ url_for('beacon_delete', id=beacon.id) }}' }" value="delete" />
                         {% endif %}
                         </td>
                     </tr>

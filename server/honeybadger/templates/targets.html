@@ -32,7 +32,7 @@
                         <td>
                             <input type="button" onclick="window.open('{{ url_for('demo', guid=target.guid) }}', '_blank')" value="demo" />
                         {% if g.user.is_admin %}
-                            <input type="button" onclick="window.location='{{ url_for('target_delete', guid=target.guid) }}'" value="delete" />
+                            <input type="button" onclick="if (confirm('Are you sure you want to delete this target and all of its beacons?')) { window.location='{{ url_for('target_delete', guid=target.guid) }}' }" value="delete" />
                         {% endif %}
                         </td>
                     </tr>
