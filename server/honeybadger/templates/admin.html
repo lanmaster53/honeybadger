@@ -32,9 +32,13 @@
                             <input type="button" onclick="copy2clip('{{ url_for('profile_activate', _external=True, token=user.token) }}')" value="get link" />
                         {% elif user.status == 1 %}
                             <input type="button" onclick="window.location='{{ url_for('admin_user', action='deactivate', id=user.id) }}'" value="deactivate" />
+                            <input type="button" onclick="window.location='{{ url_for('admin_user', action='reset', id=user.id) }}'" value="reset" />
                         {% elif user.status == 2 %}
                             <input type="button" onclick="window.location='{{ url_for('admin_user', action='activate', id=user.id) }}'" value="activate" />
+                        {% elif user.status == 3 %}
+                            <input type="button" onclick="copy2clip('{{ url_for('password_reset', _external=True, token=user.token) }}')" value="get link" />
                         {% endif %}
+                            <input type="button" onclick="if (confirm('Are you sure you want to delete this user?')) { window.location='{{ url_for('admin_user', action='delete', id=user.id) }}' }" value="delete" />
                         </td>
                     </tr>
                 {% endfor %}

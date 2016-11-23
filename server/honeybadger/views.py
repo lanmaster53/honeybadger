@@ -105,10 +105,12 @@ def profile():
             flash('Incorrect current password.')
     return render_template('profile.html', user=g.user)
 
+# use an alternate route for reset as long as the logic is similar to init
+@app.route('/password/reset/<string:token>', methods=['GET', 'POST'], endpoint='password_reset')
 @app.route('/profile/activate/<string:token>', methods=['GET', 'POST'])
 def profile_activate(token):
     user = User.query.filter_by(token=token).first()
-    if user and user.status == 0:
+    if user and user.status in (0, 3):
         if request.method == 'POST':
             new_password = request.form['new_password']
             if new_password == request.form['confirm_password']:
@@ -174,6 +176,16 @@ def admin_user(action, id):
                 db.session.add(user)
                 db.session.commit()
                 flash('User deactivated.')
+            elif action == 'reset' and user.status == 1:
+                user.status = 3
+                user.token = get_token()
+                db.session.add(user)
+                db.session.commit()
+                flash('User reset.')
+            elif action == 'delete':
+                db.session.delete(user)
+                db.session.commit()
+                flash('User deleted.')
             else:
                 flash('Invalid user action.')
         else:
