@@ -5,6 +5,7 @@ from honeybadger.validators import is_valid_email, is_valid_password
 from honeybadger.decorators import login_required, roles_required
 from honeybadger.constants import ROLES
 from honeybadger.utils import get_token
+from honeybadger.google_api import google_api
 from models import User, Target, Beacon
 import json
 import re
@@ -229,7 +230,7 @@ def api_beacons():
 
 # agent api views
 
-@app.route('/api/beacon/<target>/<agent>')
+@app.route('/api/beacon/<target>/<agent>', methods=['GET','POST'])
 def api_beacon(target, agent):
     log.message('{}'.format('='*50))
     log.message('Target: {}'.format(target))
@@ -271,15 +272,12 @@ def api_beacon(target, agent):
                 aps = parse_netsh(content)
             elif re.search('^linux', os.lower()):
                 aps = parse_iwlist(content)
-            # handle recognized data
-            if aps:
-                url = 'https://maps.googleapis.com/maps/api/browserlocation/json?browser=firefox&sensor=true'
-                query = '&wifi=mac:{}|ssid:{}|ss:{}'
-                for ap in aps:
-                    url += query.format(ap[1], ap[0], ap[2])
-                jsondata = get_json(url[:1900])
+
+            # Google api requires minimum of 2 AP stations
+            if len(aps) > 1:
+                jsondata = google_api({"wifiAccessPoints": aps})
                 if jsondata:
-                    if jsondata['status'] != 'ZERO_RESULTS':
+                    if jsondata:
                         acc = jsondata['accuracy']
                         lat = jsondata['location']['lat']
                         lng = jsondata['location']['lng']
@@ -325,6 +323,7 @@ def get_json(url):
         log.error('Failed URL: {}'.format(url))
         return None
     return jsondata
+
 
 def get_coords_by_ip(ip):
     log.message('Attempting to geolocate by IP.')
