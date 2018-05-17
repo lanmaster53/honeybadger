@@ -1,5 +1,5 @@
 from flask import request, Response, session, g, redirect, url_for, render_template, jsonify, flash, abort
-from honeybadger import app, db, log
+from honeybadger import app, db
 from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist
 from honeybadger.validators import is_valid_email, is_valid_password
 from honeybadger.decorators import login_required, roles_required
@@ -231,12 +231,12 @@ def api_beacons():
 
 @app.route('/api/beacon/<target>/<agent>')
 def api_beacon(target, agent):
-    log.message('{}'.format('='*50))
-    log.message('Target: {}'.format(target))
-    log.message('Agent: {}'.format(agent))
+    app.logger.info('{}'.format('='*50))
+    app.logger.info('Target: {}'.format(target))
+    app.logger.info('Agent: {}'.format(agent))
     # check if target is valid
     if target not in [x.guid for x in Target.query.all()]:
-        log.error('Invalid target GUID.')
+        app.logger.error('Invalid target GUID.')
         abort(404)
     # extract universal parameters
     comment = None
@@ -245,10 +245,10 @@ def api_beacon(target, agent):
     ip = request.environ['REMOTE_ADDR']
     port = request.environ['REMOTE_PORT']
     useragent = request.environ['HTTP_USER_AGENT']
-    log.message('Connection from {} @ {}:{} via {}'.format(target, ip, port, agent))
-    log.message('Parameters: {}'.format(request.values.to_dict()))
-    log.message('User-Agent: {}'.format(useragent))
-    log.message('Comment: {}'.format(comment))
+    app.logger.info('Connection from {} @ {}:{} via {}'.format(target, ip, port, agent))
+    app.logger.info('Parameters: {}'.format(request.values.to_dict()))
+    app.logger.info('User-Agent: {}'.format(useragent))
+    app.logger.info('Comment: {}'.format(comment))
     # process known coordinates
     if all(k in request.values for k in ('lat', 'lng', 'acc')):
         lat = request.values['lat']
@@ -261,8 +261,8 @@ def api_beacon(target, agent):
         os = request.values['os']
         data = request.values['data']
         content = data.decode('base64')
-        log.message('Data received:\n{}'.format(data))
-        log.message('Decoded Data:\n{}'.format(content))
+        app.logger.info('Data received:\n{}'.format(data))
+        app.logger.info('Decoded Data:\n{}'.format(content))
         if data:
             aps = None
             if re.search('^mac os x', os.lower()):
@@ -287,16 +287,16 @@ def api_beacon(target, agent):
                         abort(404)
                     else:
                         # handle zero results returned from the api
-                        log.message('No results.')
+                        app.logger.info('No results.')
                 else:
                     # handle invalid data returned from the api
-                    log.error('Invalid JSON object.')
+                    app.logger.error('Invalid JSON object.')
             else:
                 # handle unrecognized data
-                log.message('No parsable WLAN data received from the agent. Unrecognized target or wireless is disabled.')
+                app.logger.info('No parsable WLAN data received from the agent. Unrecognized target or wireless is disabled.')
         else:
             # handle blank data
-            log.message('No data received from the agent.')
+            app.logger.info('No data received from the agent.')
     # process ip geolocation (fallback)
     lat, lng = get_coords_by_ip(ip)
     if all((lat, lng)):
@@ -312,22 +312,22 @@ def add_beacon(*args, **kwargs):
     db.session.add(b)
     db.session.commit()
     #subscriptions[g.user.guid].put({'beacons': [(b.serialized)]})
-    log.message('Target location identified as Lat: {}, Lng: {}'.format(kwargs['lat'], kwargs['lng']))
+    app.logger.info('Target location identified as Lat: {}, Lng: {}'.format(kwargs['lat'], kwargs['lng']))
 
 def get_json(url):
     content = urllib2.urlopen(url).read()
     try:
         jsondata = json.loads(content)
-        log.message('API URL used: {}'.format(url))
-        log.message('JSON object retrived:\n{}'.format(jsondata))
+        app.logger.info('API URL used: {}'.format(url))
+        app.logger.info('JSON object retrived:\n{}'.format(jsondata))
     except ValueError as e:
-        log.error('Error retrieving JSON object: {}'.format(e))
-        log.error('Failed URL: {}'.format(url))
+        app.logger.error('Error retrieving JSON object: {}'.format(e))
+        app.logger.error('Failed URL: {}'.format(url))
         return None
     return jsondata
 
 def get_coords_by_ip(ip):
-    log.message('Attempting to geolocate by IP.')
+    app.logger.info('Attempting to geolocate by IP.')
     url = 'http://uniapple.net/geoip/?ip={}'.format(ip)
     jsondata = get_json(url)
     if jsondata:
@@ -336,7 +336,7 @@ def get_coords_by_ip(ip):
         return lat, lng
     else:
         # handle invalid json object
-        log.error('Invalid JSON object. Giving up on host.')
+        app.logger.error('Invalid JSON object. Giving up on host.')
         return None, None
 
 '''@app.route('/log')

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from honeybadger.utils import Logger
+import logging
 import os
 
 basedir = '/tmp'#os.path.abspath(os.path.dirname(__file__))
@@ -16,7 +16,13 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
-log = Logger()
+
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    # only use handler if gunicorn detected, otherwise default
+    if gunicorn_logger.handlers:
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)
 
 import models
 import views
