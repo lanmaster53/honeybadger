@@ -3,3 +3,4 @@
 venv/
 agents/
 server_old/
+.idea*
