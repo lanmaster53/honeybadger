@@ -229,7 +229,7 @@ def api_beacons():
 
 # agent api views
 
-@app.route('/api/beacon/<target>/<agent>')
+@app.route('/api/beacon/<target>/<agent>', methods=['GET', 'POST'])
 def api_beacon(target, agent):
     app.logger.info('{}'.format('='*50))
     app.logger.info('Target: {}'.format(target))

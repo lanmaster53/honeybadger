@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 import logging
 import os
 
-basedir = '/tmp'#os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 # configuration
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db')
