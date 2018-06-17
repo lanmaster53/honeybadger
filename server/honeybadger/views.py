@@ -1,4 +1,4 @@
-from flask import request, Response, session, g, redirect, url_for, render_template, jsonify, flash, abort
+from flask import request, make_response, session, g, redirect, url_for, render_template, jsonify, flash, abort
 from honeybadger import app, db
 from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist
 from honeybadger.validators import is_valid_email, is_valid_password
@@ -215,9 +215,23 @@ def logout():
     flash('You have been logged out')
     return redirect(url_for('index'))
 
-@app.route('/demo/<string:guid>')
+@app.route('/demo/<string:guid>', methods=['GET', 'POST'])
 def demo(guid):
-    return render_template('demo.html', target=guid)
+    text = request.values.get('text')
+    key = request.values.get('key') or ''
+    if g.user.check_password(key):
+        if text and 'alert(' in text:
+            text = 'Congrats! You entered: {}'.format(text)
+        else:
+            text = 'Nope. Try again.'
+    else:
+        text = 'Incorrect password.'
+    nonce = generate_nonce(24)
+    response = make_response(render_template('demo.html', target=guid, text=text, nonce=nonce))
+    response.headers['X-XSS-Protection'] = '0'#'1; report=https://hb.lanmaster53.com/api/beacon/{}/X-XSS-Protection'.format(guid)
+    uri = url_for('api_beacon', target=guid, agent='Content-Security-Policy')
+    response.headers['Content-Security-Policy-Report-Only'] = 'script-src \'nonce-{}\'; report-uri {}'.format(nonce, uri)
+    return response
 
 # control panel api views
 
@@ -339,7 +353,9 @@ def get_coords_by_ip(ip):
         app.logger.error('Invalid JSON object. Giving up on host.')
         return None, None
 
-'''@app.route('/log')
-@login_required
-def log():
-    return render_template('log.html', beacons=[x.serialized for x in g.user.beacons])'''
+import base64
+import os
+
+def generate_nonce(n):
+    nonce = os.urandom(n)
+    return base64.b64encode(nonce).decode()
