@@ -169,6 +169,18 @@ input[type="button"]:focus {
     text-align: center;
 }
 
+.log pre {
+    display: inline-block;
+    text-align: left;
+    /*white-space: pre-wrap;*/
+    width: 100%;
+    max-width: 1200px;
+    padding: 1rem 1.5rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    border: 1px solid #bbb;
+}
+
 .filter {
     color: white;
     position: absolute;

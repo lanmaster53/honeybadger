@@ -233,6 +233,16 @@ def demo(guid):
     response.headers['Content-Security-Policy-Report-Only'] = 'script-src \'nonce-{}\'; report-uri {}'.format(nonce, uri)
     return response
 
+@app.route('/log')
+@login_required
+def log():
+    content = 'Log is empty.'
+    try:
+        content = open(app.config['DEFAULT_LOG_FILE']).read()
+    except IOError:
+        content = 'Error loading log file.'
+    return render_template('log.html', content=content)
+
 # control panel api views
 
 @app.route('/api/beacons')

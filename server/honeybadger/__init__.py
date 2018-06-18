@@ -11,6 +11,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db')
 DEBUG = True
 SECRET_KEY = 'development key'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+DEFAULT_LOG_FILE = '/tmp/honeybadger.log'
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -23,6 +24,16 @@ if __name__ != '__main__':
     if gunicorn_logger.handlers:
         app.logger.handlers = gunicorn_logger.handlers
         app.logger.setLevel(gunicorn_logger.level)
+        # overwrite the local log file path with the gunicorn provided
+        # file path if gunicorn is configured to use a file handler
+        try:
+            DEFAULT_LOG_FILE = app.logger.handlers[0].baseFilename
+        except:
+            pass
+
+# configure the default log handler when gunicorn is not detected
+# "This function does nothing if the root logger already has handlers configured for it."
+logging.basicConfig(filename=DEFAULT_LOG_FILE, level=logging.DEBUG)
 
 import models
 import views
