@@ -62,7 +62,7 @@ function load_markers(json) {
             details:'<table class="iw-content">'
                 + '<caption>'+beacon.target+'</caption>'
                 + '<tr><td>Agent:</td><td>'+beacon.agent+' @ '+beacon.ip+':'+beacon.port+'</td></tr>'
-                + '<tr><td>Time:</td><td>'+beacon.time+'</td></tr>'
+                + '<tr><td>Time:</td><td>'+beacon.created+'</td></tr>'
                 + '<tr><td>User-Agent:</td><td>'+beacon.useragent+'</td></tr>'
                 + '<tr><td>Coordinates:</td><td><a href="https://www.google.com/maps/place/'+coords+'" target="_blank">'+coords+'</a></td></tr>'
                 + '<tr><td>Accuracy:</td><td>'+beacon.acc+'</td></tr>'
