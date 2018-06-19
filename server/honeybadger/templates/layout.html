@@ -23,13 +23,7 @@
         <div class="links">
             <ul>
             {% if g.user %}
-            {% if g.user.is_admin %}
-                <li><a href="{{ url_for('admin') }}">admin</a></li>
-                <li class="orange">|</li>
-            {% endif %}
                 <li><a href="{{ url_for('map') }}">map</a></li>
-                <li class="orange">|</li>
-                <li><a href="{{ url_for('profile') }}">profile</a></li>
                 <li class="orange">|</li>
                 <li><a href="{{ url_for('targets') }}">targets</a></li>
                 <li class="orange">|</li>
@@ -37,6 +31,12 @@
                 <li class="orange">|</li>
                 <li><a href="{{ url_for('log') }}">log</a></li>
                 <li class="orange">|</li>
+                <li><a href="{{ url_for('profile') }}">profile</a></li>
+                <li class="orange">|</li>
+            {% if g.user.is_admin %}
+                <li><a href="{{ url_for('admin') }}">admin</a></li>
+                <li class="orange">|</li>
+            {% endif %}
                 <li><a href="{{ url_for('logout') }}">logout</a></li>
             {% else %}
                 <li><a href="{{ url_for('login') }}">login</a></li>

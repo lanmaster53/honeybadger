@@ -10,9 +10,10 @@ STATUSES = {
     3: 'reset',
 }
 
-class COLORS(object):
-    N = '\033[m' # native
-    R = '\033[31m' # red
-    G = '\033[32m' # green
-    O = '\033[33m' # orange
-    B = '\033[34m' # blue
+LEVELS = {
+    10: 'DEBUG',
+    20: 'INFO',
+    30: 'WARN',
+    40: 'ERROR',
+    50: 'CRITICAL',
+}

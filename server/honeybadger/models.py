@@ -1,6 +1,6 @@
 from honeybadger import db, bcrypt
-from honeybadger.constants import ROLES, STATUSES
-from honeybadger.utils import get_guid
+from honeybadger.constants import ROLES, STATUSES, LEVELS
+from honeybadger.utils import generate_guid
 import binascii
 import datetime
 
@@ -10,10 +10,26 @@ def stringify_datetime(value):
         return None
     return value.strftime("%Y-%m-%d %H:%M:%S")
 
-class Beacon(db.Model):
-    __tablename__ = 'beacons'
+class BaseModel(db.Model):
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime, default=datetime.datetime.now)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+
+    @property
+    def created_as_string(self):
+        return stringify_datetime(self.created)
+
+class Log(BaseModel):
+    __tablename__ = 'logs'
+    level = db.Column(db.Integer, nullable=False)
+    message = db.Column(db.String)
+
+    @property
+    def level_as_string(self):
+        return LEVELS[self.level]
+
+class Beacon(BaseModel):
+    __tablename__ = 'beacons'
     target_guid = db.Column(db.String, db.ForeignKey('targets.guid'), nullable=False)
     agent = db.Column(db.String)
     ip = db.Column(db.String)
@@ -29,7 +45,7 @@ class Beacon(db.Model):
         """Return object data in easily serializeable format"""
         return {
             'id': self.id,
-            'time': stringify_datetime(self.time),
+            'created': stringify_datetime(self.created),
             'target': self.target.name,
             'agent': self.agent,
             'ip': self.ip,
@@ -44,11 +60,10 @@ class Beacon(db.Model):
     def __repr__(self):
         return "<Beacon '{}'>".format(self.target.name)
 
-class Target(db.Model):
+class Target(BaseModel):
     __tablename__ = 'targets'
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    guid = db.Column(db.String, default=get_guid())
+    guid = db.Column(db.String, default=generate_guid())
     beacons = db.relationship('Beacon', cascade="all,delete", backref='target', lazy='dynamic')
 
     @property
@@ -58,9 +73,8 @@ class Target(db.Model):
     def __repr__(self):
         return "<Target '{}'>".format(self.name)
 
-class User(db.Model):
+class User(BaseModel):
     __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String)
     role = db.Column(db.Integer, nullable=False, default=1)

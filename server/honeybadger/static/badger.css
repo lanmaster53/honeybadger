@@ -175,9 +175,9 @@ input[type="button"]:focus {
     /*white-space: pre-wrap;*/
     width: 100%;
     max-width: 1200px;
+    height: 100vh;
     padding: 1rem 1.5rem;
-    margin-left: 1rem;
-    margin-right: 1rem;
+    margin: 0 1rem;
     border: 1px solid #bbb;
 }
 
