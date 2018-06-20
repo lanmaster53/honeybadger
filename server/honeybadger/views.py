@@ -218,15 +218,17 @@ def logout():
 
 @app.route('/demo/<string:guid>', methods=['GET', 'POST'])
 def demo(guid):
-    text = request.values.get('text')
-    key = request.values.get('key') or ''
-    if g.user.check_password(key):
-        if text and 'alert(' in text:
-            text = 'Congrats! You entered: {}'.format(text)
+    text = None
+    if request.method == 'POST':
+        text = request.values['text']
+        key = request.values['key']
+        if g.user.check_password(key):
+            if text and 'alert(' in text:
+                text = 'Congrats! You entered: {}'.format(text)
+            else:
+                text = 'Nope. Try again.'
         else:
-            text = 'Nope. Try again.'
-    else:
-        text = 'Incorrect password.'
+            text = 'Incorrect password.'
     nonce = generate_nonce(24)
     response = make_response(render_template('demo.html', target=guid, text=text, nonce=nonce))
     response.headers['X-XSS-Protection'] = '0'#'1; report=https://hb.lanmaster53.com/api/beacon/{}/X-XSS-Protection'.format(guid)
@@ -237,6 +239,10 @@ def demo(guid):
 @app.route('/log')
 @login_required
 def log():
+    # hidden capability to clear logs
+    if request.values.get('clear'):
+        Log.query.delete()
+        db.session.commit()
     content = ''
     logs = Log.query.order_by(Log.created).all()
     for log in logs:
@@ -256,6 +262,7 @@ def api_beacons():
 @app.route('/api/beacon/<target>/<agent>', methods=['GET', 'POST'])
 def api_beacon(target, agent):
     logger.info('{}'.format('='*50))
+    data = {'target': target, 'agent': agent}
     logger.info('Target: {}'.format(target))
     logger.info('Agent: {}'.format(agent))
     # check if target is valid
@@ -263,73 +270,63 @@ def api_beacon(target, agent):
         logger.error('Invalid target GUID.')
         abort(404)
     # extract universal parameters
-    comment = None
-    if 'comment' in request.values:
-        comment = request.values['comment'].decode('base64')
+    comment = request.values.get('comment', '').decode('base64') or None
     ip = request.environ['REMOTE_ADDR']
     port = request.environ['REMOTE_PORT']
     useragent = request.environ['HTTP_USER_AGENT']
+    data.update({'comment': comment, 'ip': ip, 'port': port, 'useragent': useragent})
     logger.info('Connection from {} @ {}:{} via {}'.format(target, ip, port, agent))
     logger.info('Parameters: {}'.format(request.values.to_dict()))
     logger.info('User-Agent: {}'.format(useragent))
     logger.info('Comment: {}'.format(comment))
+    data.update(request.values.to_dict())
     # process known coordinates
-    if all(k in request.values for k in ('lat', 'lng', 'acc')):
-        lat = request.values['lat']
-        lng = request.values['lng']
-        acc = request.values['acc']
-        add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc=acc)
-        abort(404)
+    if all(k in data for k in ('lat', 'lng', 'acc')):
+        if process_known_coords(data):
+            abort(404)
     # process wireless survey
-    elif all(k in request.values for k in ('os', 'data')):
-        os = request.values['os']
-        data = request.values['data']
-        content = data.decode('base64')
-        logger.info('Data received:\n{}'.format(data))
-        logger.info('Decoded Data:\n{}'.format(content))
-        if data:
-            aps = None
-            if re.search('^mac os x', os.lower()):
-                aps = parse_airport(content)
-            elif re.search('^windows', os.lower()):
-                aps = parse_netsh(content)
-            elif re.search('^linux', os.lower()):
-                aps = parse_iwlist(content)
-            # handle recognized data
-            if aps:
-                url = 'https://maps.googleapis.com/maps/api/browserlocation/json?browser=firefox&sensor=true'
-                query = '&wifi=mac:{}|ssid:{}|ss:{}'
-                for ap in aps:
-                    url += query.format(ap[1], ap[0], ap[2])
-                jsondata = get_json(url[:1900])
-                if jsondata:
-                    if jsondata['status'] != 'ZERO_RESULTS':
-                        acc = jsondata['accuracy']
-                        lat = jsondata['location']['lat']
-                        lng = jsondata['location']['lng']
-                        add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc=acc)
-                        abort(404)
-                    else:
-                        # handle zero results returned from the api
-                        logger.info('No results.')
-                else:
-                    # handle invalid data returned from the api
-                    logger.error('Invalid JSON object.')
-            else:
-                # handle unrecognized data
-                logger.info('No parsable WLAN data received from the agent. Unrecognized target or wireless is disabled.')
-        else:
-            # handle blank data
-            logger.info('No data received from the agent.')
+    elif all(k in data for k in ('os', 'data')):
+        if process_wlan_survey(data):
+            abort(404)
     # process ip geolocation (fallback)
-    lat, lng = get_coords_by_ip(ip)
-    if all((lat, lng)):
-        add_beacon(target_guid=target, agent=agent, ip=ip, port=port, useragent=useragent, comment=comment, lat=lat, lng=lng, acc='Unknown')
-        abort(404)
-    # default abort to 404 for obscurity
+    process_ip(ip)
     abort(404)
 
 # support functions
+
+def get_json(url):
+    logger.info('API request URL: {}'.format(url))
+    content = urllib2.urlopen(url).read()
+    jsondata = None
+    try:
+        jsondata = json.loads(content)
+        logger.info('JSON object retrived:\n{}'.format(jsondata))
+    except ValueError as e:
+        logger.error('Error retrieving JSON object: {}'.format(e))
+    return jsondata
+
+def get_coords_from_google(aps):
+    url = 'https://maps.googleapis.com/maps/api/browserlocation/json?browser=firefox&sensor=true'
+    query = '&wifi=mac:{}|ssid:{}|ss:{}'
+    for ap in aps:
+        url += query.format(ap[1], ap[0], ap[2])
+    jsondata = get_json(url[:1900])
+    data = {'lat':None, 'lng':None, 'acc':None}
+    if jsondata and jsondata['status'] != 'ZERO_RESULTS':
+        data['acc'] = jsondata['accuracy']
+        data['lat'] = jsondata['location']['lat']
+        data['lng'] = jsondata['location']['lng']
+    return data
+
+def get_coords_by_ip(ip):
+    logger.info('Attempting to geolocate by IP.')
+    url = 'http://uniapple.net/geoip/?ip={}'.format(ip)
+    jsondata = get_json(url)
+    data = {'lat':None, 'lng':None}
+    if jsondata:
+        data['lat'] = jsondata['latitude']
+        data['lng'] = jsondata['longitude']
+    return data
 
 def add_beacon(*args, **kwargs):
     b = Beacon(**kwargs)
@@ -337,27 +334,75 @@ def add_beacon(*args, **kwargs):
     db.session.commit()
     logger.info('Target location identified as Lat: {}, Lng: {}'.format(kwargs['lat'], kwargs['lng']))
 
-def get_json(url):
-    content = urllib2.urlopen(url).read()
-    try:
-        jsondata = json.loads(content)
-        logger.info('API URL used: {}'.format(url))
-        logger.info('JSON object retrived:\n{}'.format(jsondata))
-    except ValueError as e:
-        logger.error('Error retrieving JSON object: {}'.format(e))
-        logger.error('Failed URL: {}'.format(url))
-        return None
-    return jsondata
+def process_known_coords(data):
+    add_beacon(
+        target_guid=data['target'],
+        agent=data['agent'],
+        ip=data['ip'],
+        port=data['port'],
+        useragent=data['useragent'],
+        comment=data['comment'],
+        lat=data['lat'],
+        lng=data['lng'],
+        acc=data['acc'],
+    )
+    return True
 
-def get_coords_by_ip(ip):
-    logger.info('Attempting to geolocate by IP.')
-    url = 'http://uniapple.net/geoip/?ip={}'.format(ip)
-    jsondata = get_json(url)
-    if jsondata:
-        lat = jsondata['latitude']
-        lng = jsondata['longitude']
-        return lat, lng
+def process_wlan_survey(data):
+    os = data['os']
+    _data = data['data']
+    content = _data.decode('base64')
+    logger.info('Data received:\n{}'.format(_data))
+    logger.info('Decoded Data:\n{}'.format(content))
+    if _data:
+        aps = None
+        if re.search('^mac os x', os.lower()):
+            aps = parse_airport(content)
+        elif re.search('^windows', os.lower()):
+            aps = parse_netsh(content)
+        elif re.search('^linux', os.lower()):
+            aps = parse_iwlist(content)
+        # handle recognized data
+        if aps:
+            coords = get_coords_from_google(aps)
+            if all([x for x in coords.values()]):
+                add_beacon(
+                    target_guid=data['target'],
+                    agent=data['agent'],
+                    ip=data['ip'],
+                    port=data['port'],
+                    useragent=data['useragent'],
+                    comment=data['comment'],
+                    lat=coords['lat'],
+                    lng=coords['lng'],
+                    acc=coords['acc'],
+                )
+                return True
+            else:
+                logger.error('Invalid coordinates data.')
+        else:
+            # handle unrecognized data
+            logger.info('No parsable WLAN data received from the agent. Unrecognized target or wireless is disabled.')
     else:
-        # handle invalid json object
-        logger.error('Invalid JSON object. Giving up on host.')
-        return None, None
+        # handle blank data
+        logger.info('No data received from the agent.')
+    return False
+
+def process_ip(ip):
+    coords = get_coords_by_ip(ip)
+    if all([x for x in coords.values()]):
+        add_beacon(
+            target_guid=data['target'],
+            agent=data['agent'],
+            ip=data['ip'],
+            port=data['port'],
+            useragent=data['useragent'],
+            comment=data['comment'],
+            lat=coords['lat'],
+            lng=coords['lng'],
+            acc='Unknown',
+        )
+        return True
+    else:
+        logger.error('Invalid coordinates data.')
+    return False
