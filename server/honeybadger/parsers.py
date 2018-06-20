@@ -1,42 +1,67 @@
+import os
+
+class AP(object):
+
+    def __init__(self, ssid=None, bssid=None, ss=None, channel=None):
+        self.ssid = ssid
+        self.bssid = bssid
+        self.ss = ss
+        self.channel = channel
+
+    @property
+    def serialized_for_google(self):
+        return {
+            'macAddress': self.bssid,
+            'signalStrength': self.ss,
+            'channel': self.channel,
+        }
+
+    def __repr__(self):
+        return '<AP ssid={}, bssid={}, ss={}, channel={}>'.format(self.ssid, self.bssid, self.ss, self.channel)
+
 def parse_airport(content):
     aps = []
-    lines = [l.strip() for l in content.split('\n')]
+    lines = [l.strip() for l in content.strip().split(os.linesep)]
     for line in lines[1:]:
         words = line.split()
-        aps.append((words[0], words[1], words[2]))
+        aps.append(AP(ssid=words[0], bssid=words[1], ss=int(words[2]), channel=int(words[3])))
     return aps
 
 def parse_netsh(content):
     aps = []
     lastssid = None
-    lines = [l.strip() for l in content.split('\n')]
+    lines = [l.strip() for l in content.strip().split(os.linesep)]
     for line in lines:
         words = line.split()
         # use startswith to avoid index errors
         if line.startswith('SSID'):
             lastssid = ' '.join(words[3:])
-            aps.append(lastssid)
         elif line.startswith('BSSID'):
-            if int(words[1]) > 1:
-                aps.append(lastssid)
-            aps.append(words[3])
+            ap = AP(ssid=lastssid)
+            ap.bssid = words[3]
         elif line.startswith('Signal'):
             dbm = int(words[2][:-1]) - 100
-            aps.append(str(dbm))
-    return zip(*(iter(aps),) * 3)
+            ap.ss = dbm
+        elif line.startswith('Channel'):
+            ap.channel = int(words[2])
+            aps.append(ap)
+    return aps
 
 def parse_iwlist(content):
     aps = []
-    lines = [l.strip() for l in content.split('\n')]
+    lines = [l.strip() for l in content.strip().split(os.linesep)]
     for line in lines:
         words = line.split()
         if line.startswith('Cell'):
-            aps.append(words[4])
-        elif line.startswith('ESSID:'):
-            aps.append(line[7:-1])
+            ap = AP(bssid=words[4])
+        elif line.startswith('Channel:'):
+            ap.channel = int(words[0].split(':')[-1])
         elif line.startswith('Quality='):
-            aps.append(words[2][6:])
-    return [(c[2], c[0], c[1]) for c in zip(*(iter(aps),) * 3)]
+            ap.ss = int(words[2][6:])
+        elif line.startswith('ESSID:'):
+            ap.ssid = line[7:-1]
+            aps.append(ap)
+    return aps
 
 airport_test = '''                            SSID BSSID             RSSI CHANNEL HT CC SECURITY (auth/unicast/group)
                     gogoinflight 00:3a:9a:ea:1f:42 -78  40      N  -- NONE

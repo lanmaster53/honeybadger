@@ -1,15 +1,12 @@
 from flask import request, make_response, session, g, redirect, url_for, render_template, jsonify, flash, abort
 from honeybadger import app, db, logger 
-from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist
+from honeybadger.processors import process_known_coords, process_wlan_survey, process_ip
 from honeybadger.validators import is_valid_email, is_valid_password
 from honeybadger.decorators import login_required, roles_required
 from honeybadger.constants import ROLES
 from honeybadger.utils import generate_token, generate_nonce
 from honeybadger.models import User, Target, Beacon, Log
-import json
 import os
-import re
-import urllib2
 
 # request preprocessors
 
@@ -243,6 +240,7 @@ def log():
     if request.values.get('clear'):
         Log.query.delete()
         db.session.commit()
+        return redirect(url_for('log'))
     content = ''
     logs = Log.query.order_by(Log.created).all()
     for log in logs:
@@ -289,120 +287,5 @@ def api_beacon(target, agent):
         if process_wlan_survey(data):
             abort(404)
     # process ip geolocation (fallback)
-    process_ip(ip)
+    process_ip(data)
     abort(404)
-
-# support functions
-
-def get_json(url):
-    logger.info('API request URL: {}'.format(url))
-    content = urllib2.urlopen(url).read()
-    jsondata = None
-    try:
-        jsondata = json.loads(content)
-        logger.info('JSON object retrived:\n{}'.format(jsondata))
-    except ValueError as e:
-        logger.error('Error retrieving JSON object: {}'.format(e))
-    return jsondata
-
-def get_coords_from_google(aps):
-    url = 'https://maps.googleapis.com/maps/api/browserlocation/json?browser=firefox&sensor=true'
-    query = '&wifi=mac:{}|ssid:{}|ss:{}'
-    for ap in aps:
-        url += query.format(ap[1], ap[0], ap[2])
-    jsondata = get_json(url[:1900])
-    data = {'lat':None, 'lng':None, 'acc':None}
-    if jsondata and jsondata['status'] != 'ZERO_RESULTS':
-        data['acc'] = jsondata['accuracy']
-        data['lat'] = jsondata['location']['lat']
-        data['lng'] = jsondata['location']['lng']
-    return data
-
-def get_coords_by_ip(ip):
-    logger.info('Attempting to geolocate by IP.')
-    url = 'http://uniapple.net/geoip/?ip={}'.format(ip)
-    jsondata = get_json(url)
-    data = {'lat':None, 'lng':None}
-    if jsondata:
-        data['lat'] = jsondata['latitude']
-        data['lng'] = jsondata['longitude']
-    return data
-
-def add_beacon(*args, **kwargs):
-    b = Beacon(**kwargs)
-    db.session.add(b)
-    db.session.commit()
-    logger.info('Target location identified as Lat: {}, Lng: {}'.format(kwargs['lat'], kwargs['lng']))
-
-def process_known_coords(data):
-    add_beacon(
-        target_guid=data['target'],
-        agent=data['agent'],
-        ip=data['ip'],
-        port=data['port'],
-        useragent=data['useragent'],
-        comment=data['comment'],
-        lat=data['lat'],
-        lng=data['lng'],
-        acc=data['acc'],
-    )
-    return True
-
-def process_wlan_survey(data):
-    os = data['os']
-    _data = data['data']
-    content = _data.decode('base64')
-    logger.info('Data received:\n{}'.format(_data))
-    logger.info('Decoded Data:\n{}'.format(content))
-    if _data:
-        aps = None
-        if re.search('^mac os x', os.lower()):
-            aps = parse_airport(content)
-        elif re.search('^windows', os.lower()):
-            aps = parse_netsh(content)
-        elif re.search('^linux', os.lower()):
-            aps = parse_iwlist(content)
-        # handle recognized data
-        if aps:
-            coords = get_coords_from_google(aps)
-            if all([x for x in coords.values()]):
-                add_beacon(
-                    target_guid=data['target'],
-                    agent=data['agent'],
-                    ip=data['ip'],
-                    port=data['port'],
-                    useragent=data['useragent'],
-                    comment=data['comment'],
-                    lat=coords['lat'],
-                    lng=coords['lng'],
-                    acc=coords['acc'],
-                )
-                return True
-            else:
-                logger.error('Invalid coordinates data.')
-        else:
-            # handle unrecognized data
-            logger.info('No parsable WLAN data received from the agent. Unrecognized target or wireless is disabled.')
-    else:
-        # handle blank data
-        logger.info('No data received from the agent.')
-    return False
-
-def process_ip(ip):
-    coords = get_coords_by_ip(ip)
-    if all([x for x in coords.values()]):
-        add_beacon(
-            target_guid=data['target'],
-            agent=data['agent'],
-            ip=data['ip'],
-            port=data['port'],
-            useragent=data['useragent'],
-            comment=data['comment'],
-            lat=coords['lat'],
-            lng=coords['lng'],
-            acc='Unknown',
-        )
-        return True
-    else:
-        logger.error('Invalid coordinates data.')
-    return False

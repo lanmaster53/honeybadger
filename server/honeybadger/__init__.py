@@ -11,6 +11,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db')
 DEBUG = True
 SECRET_KEY = 'development key'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+GOOGLE_API_KEY = ''
 
 app = Flask(__name__)
 app.config.from_object(__name__)
