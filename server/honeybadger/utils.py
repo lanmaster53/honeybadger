@@ -12,6 +12,13 @@ def generate_token(n=40):
 def generate_nonce(n):
     return base64.b64encode(os.urandom(n)).decode()
 
+from honeybadger.constants import CHANNELS
+
+def freq2channel(freq):
+    for channel in CHANNELS:
+        if freq in CHANNELS[channel]:
+            return channel
+
 from honeybadger.models import Log
 from honeybadger import db
 

@@ -1,4 +1,4 @@
-from honeybadger import logger
+from honeybadger import app, logger
 import urllib2
 import json
 

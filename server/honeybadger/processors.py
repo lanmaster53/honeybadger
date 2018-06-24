@@ -1,6 +1,6 @@
 from honeybadger import db, logger
 from honeybadger.models import Beacon
-from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist
+from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist, parse_google
 from honeybadger.plugins import get_coords_from_google, get_coords_from_uniapple
 import re
 
@@ -9,6 +9,37 @@ def add_beacon(*args, **kwargs):
     db.session.add(b)
     db.session.commit()
     logger.info('Target location identified as Lat: {}, Lng: {}'.format(kwargs['lat'], kwargs['lng']))
+
+def process_json(data, jsondata):
+    logger.info('Processing JSON data.')
+    logger.info('Data received:\n{}'.format(jsondata))
+    # process Google device data
+    if jsondata.get('scan_results'):
+        aps = parse_google(jsondata['scan_results'])
+        if aps:
+            logger.info('Parsed access points: {}'.format(aps))
+            coords = get_coords_from_google(aps)
+            if all([x for x in coords.values()]):
+                add_beacon(
+                    target_guid=data['target'],
+                    agent=data['agent'],
+                    ip=data['ip'],
+                    port=data['port'],
+                    useragent=data['useragent'],
+                    comment=data['comment'],
+                    lat=coords['lat'],
+                    lng=coords['lng'],
+                    acc=coords['acc'],
+                )
+                return True
+            else:
+                logger.error('Invalid coordinates data.')
+        else:
+            # handle empty data
+            logger.info('No AP data received.')
+    else:
+        # handle unrecognized data
+        logger.info('Unrecognized data received from the agent.')
 
 def process_known_coords(data):
     logger.info('Processing known coordinates.')

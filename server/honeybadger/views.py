@@ -1,7 +1,7 @@
 from flask import request, make_response, session, g, redirect, url_for, render_template, jsonify, flash, abort
 from flask_cors import cross_origin
 from honeybadger import app, db, logger
-from honeybadger.processors import process_known_coords, process_wlan_survey, process_ip
+from honeybadger.processors import process_known_coords, process_wlan_survey, process_ip, process_json
 from honeybadger.validators import is_valid_email, is_valid_password
 from honeybadger.decorators import login_required, roles_required
 from honeybadger.constants import ROLES
@@ -280,6 +280,10 @@ def api_beacon(target, agent):
     logger.info('User-Agent: {}'.format(useragent))
     logger.info('Comment: {}'.format(comment))
     data.update(request.values.to_dict())
+    # process json payloads
+    if request.json:
+        if process_json(data, request.json):
+            abort(404)
     # process known coordinates
     if all(k in data for k in ('lat', 'lng', 'acc')):
         if process_known_coords(data):
