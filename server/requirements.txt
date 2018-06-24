@@ -1,3 +1,4 @@
 Flask
 Flask-Bcrypt
 Flask-SQLAlchemy
+Flask-CORS
