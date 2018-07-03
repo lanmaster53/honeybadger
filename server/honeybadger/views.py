@@ -34,7 +34,7 @@ def map():
 @login_required
 def beacons():
     beacons = [b.serialized for t in Target.query.all() for b in t.beacons.all()]
-    columns = ['id', 'target', 'agent', 'lat', 'lng', 'acc', 'ip', 'time']
+    columns = ['id', 'target', 'agent', 'lat', 'lng', 'acc', 'ip', 'created']
     return render_template('beacons.html', columns=columns, beacons=beacons)
 
 @app.route('/beacon/delete/<int:id>')
