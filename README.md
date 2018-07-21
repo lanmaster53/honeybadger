@@ -86,7 +86,7 @@ This method accepts wireless survey data and parses the information on the serve
 Windows:
 
 ```
-cmd.exe /c netsh wlan show networks mode=bssid | findstr "SSID Signal"
+cmd.exe /c netsh wlan show networks mode=bssid | findstr "SSID Signal Channel"
 ```
 
 Linux:
