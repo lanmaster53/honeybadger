@@ -30,7 +30,9 @@ def get_coords_from_google(aps):
 
 def get_external_ip(ip):
     logger.info('Resolving external IP via Ipify API.')
-    url = "https://api.ipify.org"
+    url = "https://api.ipify.org"   # IPs are often reported as internal when testing,
+                                    #   and can't be geolocated by ipstack or ipinfo
+                                    #   as a result. This API call remedies that.
     content = urlopen(url).read()
     return content.decode()
 
@@ -44,6 +46,14 @@ def get_coords_from_ipstack(ip):
         jsondata = json.loads(content)
     except ValueError as e:
         logger.error('{}.'.format(e))
+
+    # Avoid the KeyError. For some reason, a successful API call to Ipstack doesn't include
+    #   the 'success' key in the json result, but a failed call does, and the value is False
+    if 'success' in jsondata and not jsondata['success']:
+        logger.info('Ipstack API call failed: {}'.format(jsondata['error']['type']))
+        # Return with no data so the caller knows to default to the fallback API
+        return None
+
     data = {'lat':None, 'lng':None}
     if jsondata:
         data['lat'] = jsondata['latitude']
