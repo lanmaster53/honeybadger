@@ -6,9 +6,9 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-gk", "--googlekey", dest="googlekey", type=str, required=True,
+parser.add_argument("-gk", "--googlekey", dest="googlekey", type=str, default='',
                     help="Google API Key")
-parser.add_argument("-ik", "--ipstackkey", dest="ipstackkey", type=str, required=True,
+parser.add_argument("-ik", "--ipstackkey", dest="ipstackkey", type=str, default='',
                     help="IPStack API Key")
 
 opts = parser.parse_args()
@@ -44,7 +44,7 @@ from honeybadger import views
 def initdb(username, password):
     db.create_all()
     import binascii
-    u = models.User(email=username, password_hash=bcrypt.generate_password_hash(binascii.hexlify(password)), role=0, status=1)
+    u = models.User(email=username, password_hash=bcrypt.generate_password_hash(binascii.hexlify(password.encode())), role=0, status=1)
     db.session.add(u)
     db.session.commit()
     print('Database initialized.')
