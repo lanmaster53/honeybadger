@@ -1,7 +1,7 @@
 from honeybadger import db, logger
 from honeybadger.models import Beacon
 from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist, parse_google
-from honeybadger.plugins import get_coords_from_google, get_coords_from_ipstack
+from honeybadger.plugins import get_coords_from_google, get_coords_from_ipstack, get_coords_from_ipinfo
 from base64 import b64decode as b64d
 import re
 
@@ -103,11 +103,15 @@ def process_wlan_survey(data):
 def process_ip(data):
     logger.info('Processing IP address.')
     coords = get_coords_from_ipstack(data['ip'])
+    if not coords:
+        logger.info('Using fallback API.')
+        coords = get_coords_from_ipinfo(data['ip'])
+
     if all([x for x in coords.values()]):
         add_beacon(
             target_guid=data['target'],
             agent=data['agent'],
-            ip=data['ip'],
+            ip=data['ip'],  # Replace with get_external_ip(data['ip'])?
             port=data['port'],
             useragent=data['useragent'],
             comment=data['comment'],
