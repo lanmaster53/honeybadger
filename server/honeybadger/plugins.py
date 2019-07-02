@@ -49,3 +49,20 @@ def get_coords_from_ipstack(ip):
         data['lat'] = jsondata['latitude']
         data['lng'] = jsondata['longitude']
     return data
+
+def get_coords_from_ipinfo(ip):
+    # New fallback, ipinfo doesn't require an API key for a certain number of API calls
+    logger.info('Geolocating via Ipinfo.io API.')
+    url = 'https://ipinfo.io/{}'.format(get_external_ip(ip))
+    content = urlopen(url).read()
+    logger.info('Ipinfo.io API response:\n{}'.format(content))
+    jsondata = None
+    try:
+        jsondata = json.loads(content)
+    except ValueError as e:
+        logger.error('{}.'.format(e))
+    data = {'lat':None, 'lng':None}
+    if jsondata:
+        data['lat'] = jsondata['loc'].split(',')[0]
+        data['lng'] = jsondata['loc'].split(',')[1]
+    return data
