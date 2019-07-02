@@ -285,15 +285,15 @@ def api_beacon(target, agent):
     # process json payloads
     if request.json:
         if process_json(data, request.json):
-            abort(418)
+            abort(418)  # I'm a little teapot...
     # process known coordinates
     if all(k in data for k in ('lat', 'lng', 'acc')):
         if process_known_coords(data):
-            abort(418)
+            abort(418)  # Short and stout...
     # process wireless survey
     elif all(k in data for k in ('os', 'data')):
         if process_wlan_survey(data):
-            abort(418)
-    # process ip geolocation (fallback)
+            abort(418)  # Here is my handle...
+    # process ip geolocation (includes fallback)
     process_ip(data)
-    abort(418)
+    abort(418)          # Here is my spout.
