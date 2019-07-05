@@ -24,17 +24,9 @@ def get_coords_from_google(aps):
         data['lng'] = jsondata['location']['lng']
     return data
 
-def get_external_ip(ip):
-    logger.info('Resolving external IP via Ipify API.')
-    url = "https://api.ipify.org"   # IPs are often reported as internal when testing,
-                                    #   and can't be geolocated by ipstack or ipinfo
-                                    #   as a result. This API call remedies that.
-    content = requests.get(url).content.decode()
-    return content
-
 def get_coords_from_ipstack(ip):
     logger.info('Geolocating via Ipstack API.')
-    url = 'http://api.ipstack.com/{0}?access_key={1}'.format(get_external_ip(ip), app.config['IPSTACK_API_KEY'])
+    url = 'http://api.ipstack.com/{0}?access_key={1}'.format(ip, app.config['IPSTACK_API_KEY'])
     content = requests.get(url).content
     logger.info('Ipstack API response:\n{}'.format(content))
     jsondata = None
@@ -59,7 +51,7 @@ def get_coords_from_ipstack(ip):
 def get_coords_from_ipinfo(ip):
     # New fallback, ipinfo doesn't require an API key for a certain number of API calls
     logger.info('Geolocating via Ipinfo.io API.')
-    url = 'https://ipinfo.io/{}'.format(get_external_ip(ip))
+    url = 'https://ipinfo.io/{}'.format(ip)
     content = requests.get(url).content
     logger.info('Ipinfo.io API response:\n{}'.format(content))
     jsondata = None
