@@ -1,6 +1,5 @@
 from honeybadger import app, logger
-import urllib
-from urllib.request import urlopen
+import requests
 import json
 
 def get_coords_from_google(aps):
@@ -11,13 +10,11 @@ def get_coords_from_google(aps):
         data['wifiAccessPoints'].append(ap.serialized_for_google)
     data_json = json.dumps(data)
     headers = {'Content-Type': 'application/json'}
-    request = urllib.request.Request(url, data=data_json.encode(), headers=headers)
-    response = urlopen(request)
-    content = response.read()
-    logger.info("Google API response: {}".format(content))
+    request = requests.post(url=url, data=data_json, headers=headers)
+    logger.info("Google API response: {}".format(request.content))
     jsondata = None
     try:
-        jsondata = json.loads(content)
+        jsondata = json.loads(request.content)
     except ValueError as e:
         logger.error('{}.'.format(e))
     data = {'lat':None, 'lng':None, 'acc':None}
@@ -32,13 +29,13 @@ def get_external_ip(ip):
     url = "https://api.ipify.org"   # IPs are often reported as internal when testing,
                                     #   and can't be geolocated by ipstack or ipinfo
                                     #   as a result. This API call remedies that.
-    content = urlopen(url).read()
-    return content.decode()
+    content = requests.get(url).content.decode()
+    return content
 
 def get_coords_from_ipstack(ip):
     logger.info('Geolocating via Ipstack API.')
     url = 'http://api.ipstack.com/{0}?access_key={1}'.format(get_external_ip(ip), app.config['IPSTACK_API_KEY'])
-    content = urlopen(url).read()
+    content = requests.get(url).content
     logger.info('Ipstack API response:\n{}'.format(content))
     jsondata = None
     try:
@@ -63,7 +60,7 @@ def get_coords_from_ipinfo(ip):
     # New fallback, ipinfo doesn't require an API key for a certain number of API calls
     logger.info('Geolocating via Ipinfo.io API.')
     url = 'https://ipinfo.io/{}'.format(get_external_ip(ip))
-    content = urlopen(url).read()
+    content = requests.get(url).content
     logger.info('Ipinfo.io API response:\n{}'.format(content))
     jsondata = None
     try:
