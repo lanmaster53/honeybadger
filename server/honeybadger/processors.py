@@ -111,7 +111,7 @@ def process_ip(data):
         add_beacon(
             target_guid=data['target'],
             agent=data['agent'],
-            ip=data['ip'],  # Replace with get_external_ip(data['ip'])?
+            ip=data['ip'],
             port=data['port'],
             useragent=data['useragent'],
             comment=data['comment'],
