@@ -11,8 +11,7 @@ def get_coords_from_google(aps):
         data['wifiAccessPoints'].append(ap.serialized_for_google)
     data_json = json.dumps(data)
     headers = {'Content-Type': 'application/json'}
-    request = urllib.request.Request(url, data="{}".encode(), headers=headers)
-    print(data_json)
+    request = urllib.request.Request(url, data=data_json.encode(), headers=headers)
     response = urlopen(request)
     content = response.read()
     logger.info("Google API response: {}".format(content))
