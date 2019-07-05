@@ -61,7 +61,6 @@ def process_wlan_survey(data):
     logger.info('Processing wireless survey data.')
     os = data['os']
     _data = data['data']
-    #content = _data.decode('base64')
     content = b64d(_data).decode()
     logger.info('Data received:\n{}'.format(_data))
     logger.info('Decoded Data:\n{}'.format(content))
