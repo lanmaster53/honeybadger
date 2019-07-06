@@ -14,7 +14,7 @@ def get_coords_from_google(aps):
     logger.info("Google API response: {}".format(request.content))
     jsondata = None
     try:
-        jsondata = json.loads(request.content)
+        jsondata = request.json()
     except ValueError as e:
         logger.error('{}.'.format(e))
     data = {'lat':None, 'lng':None, 'acc':None}
@@ -27,11 +27,11 @@ def get_coords_from_google(aps):
 def get_coords_from_ipstack(ip):
     logger.info('Geolocating via Ipstack API.')
     url = 'http://api.ipstack.com/{0}?access_key={1}'.format(ip, app.config['IPSTACK_API_KEY'])
-    content = requests.get(url).content
-    logger.info('Ipstack API response:\n{}'.format(content))
+    request = requests.get(url)
+    logger.info('Ipstack API response:\n{}'.format(request.content()))
     jsondata = None
     try:
-        jsondata = json.loads(content)
+        jsondata = request.json()
     except ValueError as e:
         logger.error('{}.'.format(e))
 
@@ -53,11 +53,11 @@ def get_coords_from_ipinfo(ip):
     # New fallback, ipinfo doesn't require an API key for a certain number of API calls
     logger.info('Geolocating via Ipinfo.io API.')
     url = 'https://ipinfo.io/{}'.format(ip)
-    content = requests.get(url).content
-    logger.info('Ipinfo.io API response:\n{}'.format(content))
+    request = requests.get(url)
+    logger.info('Ipinfo.io API response:\n{}'.format(request.content()))
     jsondata = None
     try:
-        jsondata = json.loads(content)
+        jsondata = request.json()
     except ValueError as e:
         logger.error('{}.'.format(e))
     data = {'lat':None, 'lng':None}
