@@ -271,7 +271,6 @@ def api_beacon(target, agent):
         logger.error('Invalid target GUID.')
         abort(404)
     # extract universal parameters
-    #comment = request.values.get('comment', '').decode('base64') or None
     comment = b64d(request.values.get('comment', '')) or None
     ip = request.environ['REMOTE_ADDR']
     port = request.environ['REMOTE_PORT']
