@@ -35,14 +35,15 @@ def get_coords_from_ipstack(ip):
     except ValueError as e:
         logger.error('{}.'.format(e))
 
+    data = {'lat':None, 'lng':None}
+
     # Avoid the KeyError. For some reason, a successful API call to Ipstack doesn't include
     #   the 'success' key in the json result, but a failed call does, and the value is False
     if 'success' in jsondata and not jsondata['success']:
         logger.info('Ipstack API call failed: {}'.format(jsondata['error']['type']))
-        # Return with no data so the caller knows to default to the fallback API
-        return None
+        # Return with empty data so the caller knows to default to the fallback API
+        return data
 
-    data = {'lat':None, 'lng':None}
     if jsondata:
         data['lat'] = jsondata['latitude']
         data['lng'] = jsondata['longitude']
