@@ -102,7 +102,8 @@ def process_wlan_survey(data):
 def process_ip(data):
     logger.info('Processing IP address.')
     coords = get_coords_from_ipstack(data['ip'])
-    if not coords:
+    if not all([x for x in coords.values()]):
+        # No data. try again with the fallback.
         logger.info('Using fallback API.')
         coords = get_coords_from_ipinfo(data['ip'])
 
