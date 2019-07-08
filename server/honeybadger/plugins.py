@@ -28,7 +28,7 @@ def get_coords_from_ipstack(ip):
     logger.info('Geolocating via Ipstack API.')
     url = 'http://api.ipstack.com/{0}?access_key={1}'.format(ip, app.config['IPSTACK_API_KEY'])
     request = requests.get(url)
-    logger.info('Ipstack API response:\n{}'.format(request.content()))
+    logger.info('Ipstack API response:\n{}'.format(request.content))
     jsondata = None
     try:
         jsondata = request.json()
@@ -54,14 +54,16 @@ def get_coords_from_ipinfo(ip):
     logger.info('Geolocating via Ipinfo.io API.')
     url = 'https://ipinfo.io/{}'.format(ip)
     request = requests.get(url)
-    logger.info('Ipinfo.io API response:\n{}'.format(request.content()))
+    logger.info('Ipinfo.io API response:\n{}'.format(request.content))
     jsondata = None
     try:
         jsondata = request.json()
     except ValueError as e:
         logger.error('{}.'.format(e))
     data = {'lat':None, 'lng':None}
-    if jsondata:
+    if jsondata and 'loc' in jsondata:
         data['lat'] = jsondata['loc'].split(',')[0]
         data['lng'] = jsondata['loc'].split(',')[1]
+    if 'bogon' in jsondata and jsondata['bogon']:
+        logger.info('Ipinfo.io cannot geolocate IP {}'.format(ip))
     return data
