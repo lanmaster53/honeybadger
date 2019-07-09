@@ -1,5 +1,5 @@
 from flask import g, redirect, url_for, abort, make_response
-from constants import ROLES
+from honeybadger.constants import ROLES
 from functools import wraps
 from threading import Thread
 

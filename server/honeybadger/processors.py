@@ -1,7 +1,8 @@
 from honeybadger import db, logger
 from honeybadger.models import Beacon
 from honeybadger.parsers import parse_airport, parse_netsh, parse_iwlist, parse_google
-from honeybadger.plugins import get_coords_from_google, get_coords_from_uniapple
+from honeybadger.plugins import get_coords_from_google, get_coords_from_ipstack, get_coords_from_ipinfo
+from base64 import b64decode as b64d
 import re
 
 def add_beacon(*args, **kwargs):
@@ -60,7 +61,7 @@ def process_wlan_survey(data):
     logger.info('Processing wireless survey data.')
     os = data['os']
     _data = data['data']
-    content = _data.decode('base64')
+    content = b64d(_data).decode()
     logger.info('Data received:\n{}'.format(_data))
     logger.info('Decoded Data:\n{}'.format(content))
     if _data:
@@ -100,7 +101,12 @@ def process_wlan_survey(data):
 
 def process_ip(data):
     logger.info('Processing IP address.')
-    coords = get_coords_from_uniapple(data['ip'])
+    coords = get_coords_from_ipstack(data['ip'])
+    if not all([x for x in coords.values()]):
+        # No data. try again with the fallback.
+        logger.info('Using fallback API.')
+        coords = get_coords_from_ipinfo(data['ip'])
+
     if all([x for x in coords.values()]):
         add_beacon(
             target_guid=data['target'],

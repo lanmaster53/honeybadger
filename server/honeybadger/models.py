@@ -98,7 +98,7 @@ class User(BaseModel):
         self.password_hash = bcrypt.generate_password_hash(binascii.hexlify(password))
 
     def check_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, binascii.hexlify(password))
+        return bcrypt.check_password_hash(self.password_hash, binascii.hexlify(password.encode()))
 
     @property
     def is_admin(self):

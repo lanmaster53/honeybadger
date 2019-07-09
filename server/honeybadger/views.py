@@ -8,6 +8,7 @@ from honeybadger.constants import ROLES
 from honeybadger.utils import generate_token, generate_nonce
 from honeybadger.models import User, Target, Beacon, Log
 import os
+from base64 import b64decode as b64d
 
 # request preprocessors
 
@@ -28,7 +29,7 @@ def index():
 @app.route('/map')
 @login_required
 def map():
-    return render_template('map.html')
+    return render_template('map.html', key=app.config['GOOGLE_API_KEY'])
 
 @app.route('/beacons')
 @login_required
@@ -270,7 +271,7 @@ def api_beacon(target, agent):
         logger.error('Invalid target GUID.')
         abort(404)
     # extract universal parameters
-    comment = request.values.get('comment', '').decode('base64') or None
+    comment = b64d(request.values.get('comment', '')) or None
     ip = request.environ['REMOTE_ADDR']
     port = request.environ['REMOTE_PORT']
     useragent = request.environ['HTTP_USER_AGENT']
@@ -292,6 +293,6 @@ def api_beacon(target, agent):
     elif all(k in data for k in ('os', 'data')):
         if process_wlan_survey(data):
             abort(404)
-    # process ip geolocation (fallback)
+    # process ip geolocation (includes fallback)
     process_ip(data)
     abort(404)

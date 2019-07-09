@@ -3,6 +3,15 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 import logging
 import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-gk", "--googlekey", dest="googlekey", type=str, default='',
+                    help="Google API Key")
+parser.add_argument("-ik", "--ipstackkey", dest="ipstackkey", type=str, default='',
+                    help="IPStack API Key")
+
+opts = parser.parse_args()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -11,7 +20,8 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db')
 DEBUG = True
 SECRET_KEY = 'development key'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-GOOGLE_API_KEY = ''
+GOOGLE_API_KEY = opts.googlekey   # Provide your google api key via command-line argument
+IPSTACK_API_KEY = opts.ipstackkey
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -28,16 +38,16 @@ if __name__ != '__main__':
         app.logger.handlers = gunicorn_logger.handlers
         app.logger.setLevel(gunicorn_logger.level)
 
-import models
-import views
+from honeybadger import models
+from honeybadger import views
 
 def initdb(username, password):
     db.create_all()
     import binascii
-    u = models.User(email=username, password_hash=bcrypt.generate_password_hash(binascii.hexlify(password)), role=0, status=1)
+    u = models.User(email=username, password_hash=bcrypt.generate_password_hash(binascii.hexlify(password.encode())), role=0, status=1)
     db.session.add(u)
     db.session.commit()
-    print 'Database initialized.'
+    print('Database initialized.')
     # remove below for production
     t = models.Target(name='demo', guid='aedc4c63-8d13-4a22-81c5-d52d32293867')
     db.session.add(t)
@@ -51,4 +61,4 @@ def initdb(username, password):
 
 def dropdb():
     db.drop_all()
-    print 'Database dropped.'
+    print('Database dropped.')
