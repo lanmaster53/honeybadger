@@ -8,7 +8,7 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 
 ### Pre-requisites
 
-* Python 2.x
+* Python 3.x
 
 ### Installation (Ubuntu and OS X)
 
@@ -29,7 +29,7 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 4. Initialize the database. The provided username and password will become the administrator account.
 
     ```
-    $ python
+    $ python3
     >>> import honeybadger
     >>> honeybadger.initdb(<username>, <password>)
     ```
@@ -37,7 +37,7 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 5. Start the HoneyBadger server.
 
     ```
-    $ python ./honeybadger.py
+    $ python3 ./honeybadger.py
     ```
 
 6. Visit the application and authenticate.
@@ -51,7 +51,7 @@ Clicking the "demo" button next to any of the targets will launch a demo web pag
 Make a mess and want to start over fresh? Do this.
 
 ```
-$ python
+$ python3
 >>> import honeybadger
 >>> honeybadger.dropdb()
 >>> honeybadger.initdb(<username>, <password>)
