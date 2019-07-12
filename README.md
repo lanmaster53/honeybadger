@@ -34,11 +34,14 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
     >>> honeybadger.initdb(<username>, <password>)
     ```
 
-5. Start the HoneyBadger server.
+5. Start the HoneyBadger server. API keys will need to be provided to be able to use maps and geolocation services.
 
     ```
-    $ python3 ./honeybadger.py
+    $ python3 ./honeybadger.py -gk <GOOGLE_API_KEY> -ik <IPSTACK_API_KEY>
     ```
+
+Honeybadger will still run without these API keys, but mapping and geolocation functionality will be limited as a result.
+
 
 6. Visit the application and authenticate.
 7. Add users and targets as needed using their respective pages.
