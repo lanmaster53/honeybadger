@@ -42,6 +42,13 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 
 Honeybadger will still run without these API keys, but mapping and geolocation functionality will be limited as a result.
 
+View usage information with either of the following:
+
+   ```
+   $ python3 ./honeybadger.py -h
+   $ python3 ./honeybadger.py --help
+   ```
+
 
 6. Visit the application and authenticate.
 7. Add users and targets as needed using their respective pages.
