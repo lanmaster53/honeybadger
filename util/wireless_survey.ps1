@@ -6,6 +6,12 @@ param (
 # Poll for wireless network information with Netsh
 $wifi = netsh wlan show networks mode=bssid | findstr "SSID Signal Channel"
 
+# Fix data before Base64-encoding to preserve line breaks.
+# The server-side parser breaks without this.
+echo $wifi > wifidat.txt                                # Write netsh results to temporary file
+$wifi = Get-Content wifidat.txt -Encoding UTF8 -Raw     # Update wifi variable with Raw switch
+rm wifidat.txt                                          # Remove temporary file
+
 # Set encoding of wifi data
 $wifibytes = [System.Text.Encoding]::UTF8.GetBytes($wifi)
 
