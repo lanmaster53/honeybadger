@@ -235,6 +235,11 @@ def demo(guid):
     response.headers['Content-Security-Policy-Report-Only'] = 'script-src \'nonce-{}\'; report-uri {}'.format(nonce, uri)
     return response
 
+@app.route('/macro_gen/<string:guid>', methods=['GET', 'POST'])
+def macro_gen(guid):
+    flash("Macro!")
+    return redirect(url_for('targets'))
+
 @app.route('/log')
 @login_required
 def log():
