@@ -29,24 +29,24 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 4. Initialize the database. The provided username and password will become the administrator account.
 
     ```
-    $ python3
+    $ python
     >>> import honeybadger
     >>> honeybadger.initdb(<username>, <password>)
     ```
 
-5. Start the HoneyBadger server. API keys will need to be provided to be able to use maps and geolocation services.
+5. Start the HoneyBadger server. API keys are required to use maps and geolocation services.
 
     ```
-    $ python3 ./honeybadger.py -gk <GOOGLE_API_KEY> -ik <IPSTACK_API_KEY>
+    $ python ./honeybadger.py -gk <GOOGLE_API_KEY> -ik <IPSTACK_API_KEY>
     ```
 
-Honeybadger will still run without these API keys, but mapping and geolocation functionality will be limited as a result.
+    Honeybadger will still run without the API keys, but mapping and geolocation functionality will be limited as a result.
 
-View usage information with either of the following:
+    View usage information with either of the following:
 
    ```
-   $ python3 ./honeybadger.py -h
-   $ python3 ./honeybadger.py --help
+   $ python ./honeybadger.py -h
+   $ python ./honeybadger.py --help
    ```
 
 
@@ -61,7 +61,7 @@ Clicking the "demo" button next to any of the targets will launch a demo web pag
 Make a mess and want to start over fresh? Do this.
 
 ```
-$ python3
+$ python
 >>> import honeybadger
 >>> honeybadger.dropdb()
 >>> honeybadger.initdb(<username>, <password>)
