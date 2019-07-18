@@ -34,15 +34,15 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
     >>> honeybadger.initdb(<username>, <password>)
     ```
 
-5. Start the HoneyBadger server. API keys will need to be provided to be able to use maps and geolocation services.
+5. Start the HoneyBadger server. API keys are required to use maps and geolocation services.
 
     ```
     $ python ./honeybadger.py -gk <GOOGLE_API_KEY> -ik <IPSTACK_API_KEY>
     ```
 
-Honeybadger will still run without these API keys, but mapping and geolocation functionality will be limited as a result.
+    Honeybadger will still run without the API keys, but mapping and geolocation functionality will be limited as a result.
 
-View usage information with either of the following:
+    View usage information with either of the following:
 
    ```
    $ python ./honeybadger.py -h
