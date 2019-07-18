@@ -8,7 +8,7 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
 
 ### Pre-requisites
 
-* Python 2.x
+* Python 3.x
 
 ### Installation (Ubuntu and OS X)
 
@@ -34,11 +34,21 @@ An early prototype of HoneyBadger (v1) can be seen in the presentation "[Hide an
     >>> honeybadger.initdb(<username>, <password>)
     ```
 
-5. Start the HoneyBadger server.
+5. Start the HoneyBadger server. API keys are required to use maps and geolocation services.
 
     ```
-    $ python ./honeybadger.py
+    $ python ./honeybadger.py -gk <GOOGLE_API_KEY> -ik <IPSTACK_API_KEY>
     ```
+
+    Honeybadger will still run without the API keys, but mapping and geolocation functionality will be limited as a result.
+
+    View usage information with either of the following:
+
+   ```
+   $ python ./honeybadger.py -h
+   $ python ./honeybadger.py --help
+   ```
+
 
 6. Visit the application and authenticate.
 7. Add users and targets as needed using their respective pages.
