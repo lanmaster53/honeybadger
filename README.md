@@ -99,10 +99,20 @@ Windows:
 cmd.exe /c netsh wlan show networks mode=bssid | findstr "SSID Signal Channel"
 ```
 
+There is a powershell script in the util directory that can be used to automatically send data to the server:
+```
+powershell .\wireless_survey.ps1 -uri <URI>
+```
+
 Linux:
 
 ```
 /bin/sh -c iwlist scan | egrep 'Address|ESSID|Signal'
+```
+
+There is a shell script in the util directory that can be used to automatically send data to the server:
+```
+bash ./wireless_survey.sh <URL>
 ```
 
 OS X:

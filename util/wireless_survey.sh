@@ -26,7 +26,7 @@ elif [[ $response_code -eq "404" ]]; then
     echo "Check the HoneyBadger web client for data to verify."
     exit 0;
 else
-    echo "The URL responded with a code that was not the expected 404."
+    echo "The URL responded with an unexpected response code."
     echo "Check the URL and the HoneyBadger server, and try again."
     exit 1;
 fi
