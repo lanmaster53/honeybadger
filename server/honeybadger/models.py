@@ -63,7 +63,7 @@ class Beacon(BaseModel):
 class Target(BaseModel):
     __tablename__ = 'targets'
     name = db.Column(db.String)
-    guid = db.Column(db.String, default=generate_guid())
+    guid = db.Column(db.String, default=generate_guid)
     beacons = db.relationship('Beacon', cascade="all,delete", backref='target', lazy='dynamic')
 
     @property
